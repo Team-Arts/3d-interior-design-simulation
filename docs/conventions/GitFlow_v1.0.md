@@ -2,8 +2,6 @@
 
 # Git Branch 전략에 대해
 
-***
-
 ## Git Branch 전략이란
 
 **Git Branch 전략**: <span style="background-color: #7cffa4">여러 개발자가 하나의 저장소에서 작업을 할 때 협업을 효과적으로 하기 위해 Git Branch에 대한 **규칙을 정하고** 저장소를 **체계적으로 활용**하는 전략</span>
