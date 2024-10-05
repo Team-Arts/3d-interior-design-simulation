@@ -772,14 +772,14 @@ else
 ```cpp
 switch (var)
 {
-    case 0:
-        ...
-        break;
-    case 1:
-        ...
-        break;
-    default:
-        assert(false);
+case 0:
+    ...
+    break;
+case 1:
+    ...
+    break;
+default:
+    assert(false);
 }
 ```
 
