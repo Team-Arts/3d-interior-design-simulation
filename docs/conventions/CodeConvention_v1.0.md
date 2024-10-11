@@ -143,7 +143,7 @@ i = f();
 int j = g();
 for (int i = 0; i < 10; i++)
 {
-    DoSomething();
+    doSomething();
 }
 ```
 
@@ -298,7 +298,7 @@ enum eColor
 {
 };
 ...
-    struct LaptopInfo laptopInfo;
+    struct LaptopInfo laptop_info;
     eColor color;
 ```
 
@@ -342,8 +342,8 @@ eColor color;
 
 ```cpp
 // Good
-int priceCountReader; // 축약 없음
-int numErrors; // "num"은 누구나 이해 가능
+int price_count_reader; // 축약 없음
+int num_errors; // "num"은 누구나 이해 가능
 ```
 
 <br>
@@ -410,30 +410,34 @@ enum eDirection
 
 ## 변수
 
-### 지역 변수, 구조체 변수, 열거형 변수, 클래스 멤버 변수
+### 지역 변수, 구조체 변수, 열거형 변수
 
-지역 변수, 구조체 변수, 열거형 변수, 클래스 멤버 변수는 카멜 케이스로 작성한다.
+지역 변수, 전역 변수, 구조체 변수, 열거형 변수는 스네이크 케이스로 작성한다.
 
 ```cpp
-string tableName; // 지역 변수
-struct LaptopInfo laptopInfo; // 구조체 변수
-eTableColor tableColor; // 열거형 변수
+string table_name;
+struct LaptopInfo laptop_info;
+eTableColor table_color;
+```
 
-class AwesomeClass
-{
-private:
-    int canvasWidth = 15; // 클래스 멤버 변수
-}
+<br>
+
+### 클래스 멤버 변수(데이터 멤버)
+
+클래스 멤버 변수는 스네이크 케이스로 작성한 다음, 항상 끝에 언더스코어(_)를 붙인다.
+
+```cpp
+string table_name_;
 ```
 
 <br>
 
 ### 전역 변수
 
-전역 변수는 가급적 사용하지 않는 것이 좋지만 사용할 때에는 맨 앞에 `g_`로 작성하고 그 다음엔 카멜 케이스로 작성한다.
+전역 변수는 가급적 사용하지 않는 것이 좋지만 사용할 때에는 맨 앞에 `g_`로 작성하고 그 다음엔 스네이크 케이스로 작성한다.
 
 ```cpp
-int g_numChair;
+int g_num_chair;
 ```
 
 <br>
@@ -452,11 +456,11 @@ const int kDaysInAWeek = 7;
 
 <br>
 
-- 일반 함수, 메서드(멤버 함수)의 경우 파스칼 케이스로 이름 짓는다.
-- getter, setter는 `Get` 또는 `Set`을 맨 앞에 작성하고 그 다음 문자부터 해당하는 변수의 이름을 파스칼 케이스로 작성한다.
+- 일반 함수, 메서드(멤버 함수)의 경우 카멜 케이스로 이름 짓는다.
+- getter, setter는 `get` 또는 `set`을 맨 앞에 작성하고 그 다음 문자부터 해당하는 변수의 이름을 파스칼 케이스로 작성한다.
 
 ```cpp
-void PlayGame() // 함수
+void playGame()
 {
 }
 
@@ -465,11 +469,11 @@ void PlayGame() // 함수
 class AwesomeWeapon
 {
 public:
-    int GetRange();
-    int SetRange();
-    void MoveForward(); // 메서드
+    int getRange();
+    int setRange();
+    void moveForward();
 private:
-    int range;
+    int range_;
 }
 ```
 
@@ -512,10 +516,10 @@ private:
 
 ```cpp
 // 캐릭터를 앞으로 이동시킬 때 사용한다.
-void MoveForward();
+void moveForward();
 
 // 캐릭터를 앞으로 이동시킨다.
-void MoveForward()
+void moveForward()
 {
     
 }
@@ -541,10 +545,10 @@ int speed = 100; // 명령문과 같은 줄에 주석 작성
 
 ```cpp
 // 캐릭터를 앞으로 이동시킬 때 사용한다.
-void MoveForward();
+void moveForward();
 
 // 캐릭터를 앞으로 이동시킨다.
-void MoveForward()
+void moveForward()
 {
     
 }
@@ -561,7 +565,7 @@ private:
 	// 테이블에 있는 엔트리의 총 개수를 기록한다.
  	// 한계를 넘지 않도록 보장하는 데 사용된다. -1은 테이블에 얼마나 많은
  	// 엔트리가 들어있는지 아직 알지 못하는 경우를 의미한다.
-	int numTotalEntries;
+	int num_total_entries_;
 ```
 
 <br>
@@ -570,7 +574,7 @@ private:
 
 ```cpp
 // 이 회귀 테스트에서 통과한 테스트 케이스의 총 개수
-const int g_numTestCases = 6;
+const int g_num_test_cases = 6;
 ```
 
 <br>
@@ -622,7 +626,7 @@ const int g_numTestCases = 6;
 ```cpp
 int *ptr = new int [10];
 
-int DoSomething(char *str, int num1)
+int doSomething(char *str, int num1)
 {
     ...
 }
@@ -656,7 +660,7 @@ Tab 사용을 자제하고 스페이스만 사용하고 4개의 스페이스(4�
 ```cpp
 ReturnType ClassName::FunctionName(Type par_name1, Type par_name2)
 {
-    DoSomething();
+    doSomething();
     ...
 }
 ```
@@ -667,7 +671,7 @@ ReturnType ClassName::FunctionName(Type par_name1, Type par_name2)
 ReturnType ClassName::FunctionName(Type par_name1, Type par_name2, 
                                    Type par_name3)
 {
-    DoSomething();
+    doSomething();
     ...
 }
 ```
@@ -680,7 +684,7 @@ ReturnType LongClassName::ReallyReallyLongFunctionName(
     Type par_name2,
     Type par_name3)
 {
-    DoSomething();
+    doSomething();
     ...
 }
 ```
@@ -696,7 +700,7 @@ ReturnType LongClassName::ReallyReallyLongFunctionName(
 K&R
 
 ```cpp
-int DoSomething(){
+int doSomething(){
 ...
 }
 ```
@@ -706,7 +710,7 @@ int DoSomething(){
 **BSD**
 
 ```cpp
-int DoSomething()
+int doSomething()
 {
     ...
 }
@@ -719,7 +723,7 @@ int DoSomething()
 - 자리가 충분한 경우 한 줄에 쓰고, 그렇지 않은 경우 괄호 안의 인자들을 줄바꿈한다.
 
 ```cpp
-bool retval = DoSomething(argument1, argument2, argument3);
+bool retval = doSomething(argument1, argument2, argument3);
 ```
 
 <br>
@@ -727,7 +731,7 @@ bool retval = DoSomething(argument1, argument2, argument3);
 - 인자들이 모두 한 줄에 들어갈 자리가 없다면 여러 줄로 나누어 쓰되 이어지는 줄은 첫 번째 인자와 같은 열에 오도록 한다. 괄호와 인자 사이에는 스페이스를 두지 않고 붙여서 작성한다.
 
 ```cpp
-bool retval = DoSomething(argument1,
+bool retval = doSomething(argument1,
                           argument2,
                           argument3,
                           argument4);
@@ -772,14 +776,14 @@ else
 ```cpp
 switch (var)
 {
-case 0:
-    ...
-    break;
-case 1:
-    ...
-    break;
-default:
-    assert(false);
+    case 0:
+        ...
+        break;
+    case 1:
+        ...
+        break;
+    default:
+        assert(false);
 }
 ```
 
@@ -800,7 +804,7 @@ for (int i = 0; i < kSomeNumber; i++) {} // 비어 있는 루프
 
 for (int i = 0; i < kSomeNumber; i++)
 {
-    DoSomething;
+    doSomething;
 }
 ```
 
@@ -817,7 +821,7 @@ while (condition) {} // 비어 있는 루프
 
 while (condition)
 {
-    DoSomething;
+    doSomething;
 }
 ```
 
@@ -882,8 +886,8 @@ public:
     ChildClass(int var);
     ~ChildClass() {}
     
-    void DoSomething();
-    void SetSomeVar(int var)
+    void doSomething();
+    void setSomeVar(int var)
     {
         some_var_ = var;
     }
@@ -907,16 +911,5 @@ private:
 
 - 명령문과 문장 마침 기호인 세미콜론 `;`은 붙여쓰고 `;` 다음에 코드를 작성할 경우 스페이스를 한 칸 넣고 작성한다.
 - 하나의 변수를 연산할 때 `x += 5;`형식 보단  `x = x + 5;`, `x = x * 3;`형식으로 작성한다.
-- 연산자, `=`과 피연산자 사이에는 스페이스를 한 칸 넣고 작성한다.
-
-```cpp
-x = a + b;
-y = c * d;
-
-for (int i = 0; i < 7; i++)
-{
-    ...
-}
-```
 
 <br>
