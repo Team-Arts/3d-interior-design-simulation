@@ -1,4 +1,4 @@
-![git-flow](../images/GitFlow_v1.0/git-flow.png)
+![git-flow](./images/GitFlow_v1.0/git-flow.png)
 
 # Git Branch 전략에 대해
 
@@ -32,7 +32,7 @@
 
 # Git-Flow 전략
 
-![git-flow-kr](../images/GitFlow_v1.0/git-flow-kr.png)
+![git-flow-kr](./images/GitFlow_v1.0/git-flow-kr.png)
 
 **Git-Flow 전략**은 <span style="background-color: #fff551">배포 안정성과 버전 관리 및 롤백 등 체계적인 운영이 가능</span>하지만 <span style="background-color: #fff551">더 많은 제어와 복잡성을 가지고 있어 특정 기능이나 수정을 빠르게 배포해야 할 경우 등에서 유연성이 다소 떨어진다.</span>
 

@@ -2,7 +2,7 @@
 
 GitHub **Issue** 예시 
 
-![github-issue](../images/GitHubIssueProjectMilestone_v1.0/github-issue.png)
+![github-issue](./images/GitHubIssueProjectMilestone_v1.0/github-issue.png)
 
 <br>
 
@@ -28,7 +28,7 @@ GitHub **Issue** 예시
 
 GitHub **Label**예시
 
-![github-label](../images/GitHubIssueProjectMilestone_v1.0/github-label.png)
+![github-label](./images/GitHubIssueProjectMilestone_v1.0/github-label.png)
 
 <br>
 
@@ -66,7 +66,7 @@ GitHub **Label**예시
 
 GitHub **Project** 예시
 
-![github-project](../images/GitHubIssueProjectMilestone_v1.0/github-project.png)
+![github-project](./images/GitHubIssueProjectMilestone_v1.0/github-project.png)
 
 <br>
 
@@ -77,7 +77,7 @@ GitHub **Project** 예시
 
 (Kanban board 형식 뷰)
 
-![board](../images/GitHubIssueProjectMilestone_v1.0/board.png)
+![board](./images/GitHubIssueProjectMilestone_v1.0/board.png)
 
 ## Project 활용
 
