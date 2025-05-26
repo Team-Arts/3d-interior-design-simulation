@@ -99,7 +99,7 @@ GitHub **Project** 예시
 
 GitHub **Milestone**예시
 
-![github-milestone](../images/GitHubIssueProjectMilestone_v1.0/github-milestone.png)
+![github-milestone](./images/GitHubIssueProjectMilestone_v1.0/github-milestone.png)
 
 <br>
 
