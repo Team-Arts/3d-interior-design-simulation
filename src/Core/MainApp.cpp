@@ -42,12 +42,11 @@ void MainApp::Update(float deltaTime)
 
 void MainApp::Render()
 {
-    // ·»´õ¸µ ½ÃÀÛ
-    m_renderer->BeginScene(0.1f, 0.1f, 0.1f, 1.0f);
+    // ·»´õ¸µ ½ÃÀÛ (¾îµÎ¿î È¸»ö ¹è°æ)
+    m_renderer->BeginScene(0.2f, 0.2f, 0.2f, 1.0f);
 
-    // ¾À ·»´õ¸µ
-
-    // UI ·»´õ¸µ
+    // Å×½ºÆ®¿ë »ï°¢Çü ±×¸®±â
+    m_renderer->Draw(nullptr);
 
     // ·»´õ¸µ Á¾·á
     m_renderer->EndScene();

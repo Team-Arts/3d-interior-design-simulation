@@ -1,6 +1,13 @@
 #include "Renderer.h"
 #include <d3dcompiler.h>
 #include <iostream>
+#if defined(_MSC_VER) && _MSC_VER < 1914
+    #include <experimental/filesystem>
+    namespace fs = std::experimental::filesystem;
+#else
+    #include <filesystem>
+    namespace fs = std::filesystem;
+#endif
 
 namespace visualnnz
 {
@@ -265,6 +272,48 @@ void Renderer::SetViewport(int width, int height)
     m_context->RSSetViewports(1, &m_screenViewport);
 }
 
+// 렌더링 상태 생성 및 설정
+bool Renderer::CreateRenderStates()
+{
+    // Rasterizer State 생성
+    D3D11_RASTERIZER_DESC rasterizerDesc = {};
+    rasterizerDesc.FillMode = D3D11_FILL_SOLID;   // 솔리드 렌더링
+    rasterizerDesc.CullMode = D3D11_CULL_BACK;    // Backface culling
+    rasterizerDesc.FrontCounterClockwise = false; // 시계방향이 앞면
+    rasterizerDesc.DepthBias = 0;
+    rasterizerDesc.DepthBiasClamp = 0.0f;
+    rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+    rasterizerDesc.DepthClipEnable = true; // 깊이 클리핑 활성화
+    rasterizerDesc.ScissorEnable = false;
+    rasterizerDesc.MultisampleEnable = (m_numQualityLevels > 0); // MSAA 설정
+    rasterizerDesc.AntialiasedLineEnable = false;
+
+    if (FAILED(m_device->CreateRasterizerState(&rasterizerDesc, m_rasterizerState.GetAddressOf())))
+    {
+        cout << "CreateRasterizerState() failed." << endl;
+        return false;
+    }
+
+    // Depth Stencil State 생성
+    D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
+    depthStencilDesc.DepthEnable = true;                          // 깊이 테스트 활성화
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL; // 깊이 쓰기 허용
+    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;           // 가까운 것이 우선
+    depthStencilDesc.StencilEnable = false;                       // 스텐실 비활성화
+
+    if (FAILED(m_device->CreateDepthStencilState(&depthStencilDesc, m_depthStencilState.GetAddressOf())))
+    {
+        cout << "CreateDepthStencilState() failed." << endl;
+        return false;
+    }
+
+    // 생성한 상태들을 파이프라인에 바인딩
+    m_context->RSSetState(m_rasterizerState.Get());
+    m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 1);
+
+    return true;
+}
+
 void Renderer::Shutdown()
 {
     // ComPtr이 자동으로 Release를 호출하므로 비워둬도 됨
@@ -272,25 +321,59 @@ void Renderer::Shutdown()
 
 void Renderer::BeginScene(float r, float g, float b, float a)
 {
-    // TODO(YourName): 렌더 타겟 클리어
+    // 렌더 타겟과 깊이 스텐실 클리어
+    float clearColor[4] = { r, g, b, a };
+    m_context->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
+    m_context->ClearDepthStencilView(m_depthStencilView.Get(), 
+                                    D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 
+                                    1.0f, 0);
 }
 
 void Renderer::EndScene()
 {
-    // TODO(YourName): 스왑체인 Present
+    // 백 버퍼를 프론트 버퍼로 교체
+    m_swapChain->Present(1, 0); // V-Sync 활성화
+}
+
+// 현재 실행 파일의 디렉터리를 기준으로 절대 경로 생성
+wstring GetExecutableDirectory()
+{
+    wchar_t buffer[MAX_PATH];
+    GetModuleFileNameW(nullptr, buffer, MAX_PATH);
+    wstring::size_type pos = wstring(buffer).find_last_of(L"\\/");
+    return wstring(buffer).substr(0, pos);
 }
 
 // 셰이더 컴파일 및 생성
 bool Renderer::CreateShaders()
 {
     ComPtr<ID3DBlob> vsBlob, psBlob, errorBlob;
+
+    // 현재 작업 디렉터리 출력
+    wchar_t currentDir[MAX_PATH];
+    GetCurrentDirectoryW(MAX_PATH, currentDir);
+    wcout << L"Current Directory: " << currentDir << endl;
+
+    // 셰이더 경로 설정
+    wstring vsPath = L"src/Graphics/shaders/BasicVertexShader.hlsl";
+    wstring psPath = L"src/Graphics/shaders/BasicPixelShader.hlsl";
+
+    if (fs::exists(vsPath))
+    {
+        wcout << L"Vertex shader file found: " << vsPath << endl;
+    }
+    else
+    {
+        wcout << L"Vertex shader file NOT found: " << vsPath << endl;
+        return false;
+    }
     
-    // 상대 경로를 assets/shaders/로 수정
+    // 실제 컴파일도 같은 경로 사용 (수정 부분)
     HRESULT hr = D3DCompileFromFile(
-        L"../../../assets/shaders/BasicVertexShader.hlsl",  // 수정된 경로
+        vsPath.c_str(),  // ← 여기를 수정
         nullptr, 
         nullptr, 
-        "VSMain", 
+        "main", 
         "vs_5_0", 
         0, 
         0, 
@@ -304,14 +387,16 @@ bool Renderer::CreateShaders()
         {
             cout << "Vertex Shader Error: " << (char*)errorBlob->GetBufferPointer() << endl;
         }
+        cout << "Failed to load vertex shader from: ";
+        wcout << vsPath << endl;
         return false;
     }
 
     hr = D3DCompileFromFile(
-        L"assets/shaders/BasicPixelShader.hlsl",  // 수정된 경로
+        psPath.c_str(),  // ← 여기를 수정
         nullptr, 
         nullptr, 
-        "PSMain", 
+        "main", 
         "ps_5_0", 
         0, 
         0, 
@@ -325,6 +410,8 @@ bool Renderer::CreateShaders()
         {
             cout << "Pixel Shader Error: " << (char*)errorBlob->GetBufferPointer() << endl;
         }
+        cout << "Failed to load pixel shader from: ";
+        wcout << psPath << endl;
         return false;
     }
 
@@ -392,48 +479,6 @@ void Renderer::Draw(InteriorObject *interiorObject)
 {
     SetRenderStates();
     m_context->DrawIndexed(3, 0, 0); // 예시: 삼각형
-}
-
-// 새로 추가할 함수
-bool Renderer::CreateRenderStates()
-{
-    // Rasterizer State 생성
-    D3D11_RASTERIZER_DESC rasterizerDesc = {};
-    rasterizerDesc.FillMode = D3D11_FILL_SOLID;        // 솔리드 렌더링
-    rasterizerDesc.CullMode = D3D11_CULL_BACK;         // Backface culling
-    rasterizerDesc.FrontCounterClockwise = false;      // 시계방향이 앞면
-    rasterizerDesc.DepthBias = 0;
-    rasterizerDesc.DepthBiasClamp = 0.0f;
-    rasterizerDesc.SlopeScaledDepthBias = 0.0f;
-    rasterizerDesc.DepthClipEnable = true;             // 깊이 클리핑 활성화
-    rasterizerDesc.ScissorEnable = false;
-    rasterizerDesc.MultisampleEnable = (m_numQualityLevels > 0); // MSAA 설정
-    rasterizerDesc.AntialiasedLineEnable = false;
-
-    if (FAILED(m_device->CreateRasterizerState(&rasterizerDesc, m_rasterizerState.GetAddressOf())))
-    {
-        cout << "CreateRasterizerState() failed." << endl;
-        return false;
-    }
-
-    // Depth Stencil State 생성
-    D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
-    depthStencilDesc.DepthEnable = true;               // 깊이 테스트 활성화
-    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL; // 깊이 쓰기 허용
-    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS; // 가까운 것이 우선
-    depthStencilDesc.StencilEnable = false;            // 스텐실 비활성화
-
-    if (FAILED(m_device->CreateDepthStencilState(&depthStencilDesc, m_depthStencilState.GetAddressOf())))
-    {
-        cout << "CreateDepthStencilState() failed." << endl;
-        return false;
-    }
-
-    // 생성한 상태들을 파이프라인에 바인딩
-    m_context->RSSetState(m_rasterizerState.Get());
-    m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 1);
-
-    return true;
 }
 
 } // namespace visualnnz
