@@ -5,13 +5,6 @@ using namespace DirectX::SimpleMath;
 
 class Transform 
 {
-private:
-    Vector3 m_position;
-    Vector3 m_rotation; // Euler angles
-    Vector3 m_scale;
-    Matrix m_worldMatrix;
-    bool m_isDirty;
-
 public:
     // OB-002, OB-003에서 사용할 위치 조작
     void SetPosition(const Vector3& position);
@@ -21,4 +14,11 @@ public:
     // 행렬 계산
     Matrix GetWorldMatrix();
     void UpdateMatrix();
+
+private:
+    Vector3 m_position;
+    Vector3 m_rotation; // Euler angles
+    Vector3 m_scale;
+    Matrix m_worldMatrix;
+    bool m_isDirty;
 };

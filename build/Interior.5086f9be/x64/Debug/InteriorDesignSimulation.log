@@ -1,5 +1,24 @@
-﻿  Renderer.cpp
-C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\filesystem(12): warning STL4038: The contents of <filesystem> are available only with C++17 or later.
-  InteriorDesignSimulation.vcxproj -> C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\src\x64\Debug\InteriorDesignSimulation.exe
+﻿  compilation object save succeeded; see C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\bin\x64\Debug\BasicPixelShader.cso
+  compilation object save succeeded; see C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\bin\x64\Debug\BasicVertexShader.cso
+  Camera.cpp
+  Light.cpp
+  MeshRenderer.cpp
+  Transform.cpp
+  AppBase.cpp
+  MainApp.cpp
+  Timer.cpp
+  Material.cpp
+  Mesh.cpp
+  Renderer.cpp
+  Shader.cpp
+  Texture.cpp
+  InputManager.cpp
+  main.cpp
+  InteriorObject.cpp
+  Scene.cpp
+  SceneManager.cpp
+  UIManager.cpp
+  코드를 생성하고 있습니다...
+  InteriorDesignSimulation.vcxproj -> C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\bin\x64\Debug\InteriorDesignSimulation.exe
   'pwsh.exe'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
   배치 파일이 아닙니다.

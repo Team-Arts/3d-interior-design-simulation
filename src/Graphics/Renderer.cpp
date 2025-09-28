@@ -481,4 +481,47 @@ void Renderer::Draw(InteriorObject *interiorObject)
     m_context->DrawIndexed(3, 0, 0); // 예시: 삼각형
 }
 
+// 윈도우 크기 변경 처리
+bool Renderer::OnWindowResize(int width, int height)
+{
+    if (width == m_currentWidth && height == m_currentHeight)
+        return true; // 크기가 변경되지 않았으면 리턴
+
+    m_currentWidth = width;
+    m_currentHeight = height;
+
+    // 기존 렌더 타겟 해제
+    m_renderTargetView.Reset();
+    m_depthStencilView.Reset();
+    m_depthStencilBuffer.Reset();
+
+    // 스왑체인 버퍼 크기 조정
+    HRESULT hr = m_swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+    if (FAILED(hr))
+    {
+        cout << "SwapChain ResizeBuffers failed." << endl;
+        return false;
+    }
+
+    // 렌더 타겟 뷰 재생성
+    if (!CreateRenderTargetView())
+        return false;
+
+    // 깊이 스텐실 뷰 재생성
+    if (!CreateDepthStencilView(width, height))
+        return false;
+
+    // 뷰포트 재설정
+    SetViewport(width, height);
+
+    // 렌더 타겟 재바인딩
+    m_context->OMSetRenderTargets(
+        1, 
+        m_renderTargetView.GetAddressOf(), 
+        m_depthStencilView.Get()
+    );
+
+    return true;
+}
+
 } // namespace visualnnz

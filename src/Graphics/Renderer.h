@@ -26,24 +26,31 @@ public:
     // 그리기 함수
     void Draw(InteriorObject *interiorObject);
 
-    // Direct3D 장치 및 컨텍스트 접근자
-    ComPtr<ID3D11Device> GetDevice();
-    ComPtr<ID3D11DeviceContext> GetDeviceContext();
+    // Direct3D 장치 및 컨텍스트 접근자 - 성능상 inline으로 구현
+    inline ComPtr<ID3D11Device> GetDevice() const { return m_device; }
+    inline ComPtr<ID3D11DeviceContext> GetDeviceContext() const { return m_context; }
 
 private:
-    // 파이프라인 구축 함수
+    // 초기화 관련 함수
     bool CreateDeviceAndSwapChain(HWND hWnd);
     bool CreateRenderTargetView();
     bool CreateDepthStencilView(int width, int height);
     void SetViewport(int width, int height);
     bool CreateRenderStates();
 
-    // 셰이더 및 버퍼 생성 함수
+    // 셰이더 및 버퍼 관련 함수
     bool CreateShaders();
     bool CreateBuffers();
     void SetRenderStates();
 
+    // 윈도우 크기 변경 처리
+    bool OnWindowResize(int width, int height);
+
     UINT m_numQualityLevels = 0;
+    
+    // 현재 윈도우 크기 추적
+    int m_currentWidth = 0;
+    int m_currentHeight = 0;
 
     // Direct3D 핵심 인터페이스
     ComPtr<ID3D11Device> m_device;

@@ -2,10 +2,17 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\src\x64\Debug\InteriorDesignSimulation.exe</FullPath>
+      <FullPath>C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\bin\x64\Debug\InteriorDesignSimulation.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
-  <ContentFiles />
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\bin\x64\Debug\BasicPixelShader.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\bin\x64\Debug\BasicVertexShader.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
   <SatelliteDlls />
   <NonRecipeFileRefs />
 </Project>
