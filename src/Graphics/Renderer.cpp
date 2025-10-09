@@ -1,6 +1,12 @@
 #include "Renderer.h"
+#include "Shader.h"
+#include "../Components/MeshRenderer.h"
+#include "../Components/Transform.h"
+#include "../Scene/InteriorObject.h"
 #include <d3dcompiler.h>
+#include <directxtk/SimpleMath.h>
 #include <iostream>
+
 #if defined(_MSC_VER) && _MSC_VER < 1914
     #include <experimental/filesystem>
     namespace fs = std::experimental::filesystem;
@@ -12,10 +18,12 @@
 namespace visualnnz
 {
 using Microsoft::WRL::ComPtr;
+using namespace DirectX::SimpleMath;
 using namespace std;
 
 Renderer::Renderer()
 {
+    m_shader = make_unique<Shader>();
 }
 
 Renderer::~Renderer()
@@ -69,8 +77,12 @@ bool Renderer::Initialize(HWND hWnd)
     // 렌더링 파이프라인 구축
     if (!CreateShaders())
         return false;
-    if (!CreateBuffers())
+    if (!CreateConstantBuffer())
         return false;
+
+    // 윈도우 크기 초기화 추가
+    m_currentWidth = width;   // 추가
+    m_currentHeight = height; // 추가
 
     return true;
 }
@@ -252,6 +264,20 @@ bool Renderer::CreateDepthStencilView(int width, int height)
     return true;
 }
 
+// 상수 버퍼 생성 (월드, 뷰, 프로젝션 행렬용)
+bool Renderer::CreateConstantBuffer()
+{
+    // 상수 버퍼 구조체 정의는 헤더에 추가 필요
+    D3D11_BUFFER_DESC cbDesc = {};
+    cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+    cbDesc.ByteWidth = sizeof(BasicVertexConstantData);
+    cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    
+    HRESULT hr = m_device->CreateBuffer(&cbDesc, nullptr, m_vertexConstantBuffer.GetAddressOf());
+    return SUCCEEDED(hr);
+}
+
 // 뷰포트 설정
 void Renderer::SetViewport(int width, int height)
 {
@@ -261,7 +287,7 @@ void Renderer::SetViewport(int width, int height)
     {
         previousGuiWidth = m_guiWidth;
     }*/
-    D3D11_VIEWPORT m_screenViewport = {};
+    ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
     m_screenViewport.Width = static_cast<float>(width);
     m_screenViewport.Height = static_cast<float>(height);
     m_screenViewport.MinDepth = 0.0f;
@@ -319,10 +345,9 @@ void Renderer::Shutdown()
     // ComPtr이 자동으로 Release를 호출하므로 비워둬도 됨
 }
 
-void Renderer::BeginScene(float r, float g, float b, float a)
+void Renderer::BeginScene(float *clearColor)
 {
     // 렌더 타겟과 깊이 스텐실 클리어
-    float clearColor[4] = { r, g, b, a };
     m_context->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
     m_context->ClearDepthStencilView(m_depthStencilView.Get(), 
                                     D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 
@@ -333,15 +358,6 @@ void Renderer::EndScene()
 {
     // 백 버퍼를 프론트 버퍼로 교체
     m_swapChain->Present(1, 0); // V-Sync 활성화
-}
-
-// 현재 실행 파일의 디렉터리를 기준으로 절대 경로 생성
-wstring GetExecutableDirectory()
-{
-    wchar_t buffer[MAX_PATH];
-    GetModuleFileNameW(nullptr, buffer, MAX_PATH);
-    wstring::size_type pos = wstring(buffer).find_last_of(L"\\/");
-    return wstring(buffer).substr(0, pos);
 }
 
 // 셰이더 컴파일 및 생성
@@ -358,127 +374,60 @@ bool Renderer::CreateShaders()
     wstring vsPath = L"src/Graphics/shaders/BasicVertexShader.hlsl";
     wstring psPath = L"src/Graphics/shaders/BasicPixelShader.hlsl";
 
-    if (fs::exists(vsPath))
+    if (!m_shader->Initialize(m_device, vsPath, psPath))
     {
-        wcout << L"Vertex shader file found: " << vsPath << endl;
-    }
-    else
-    {
-        wcout << L"Vertex shader file NOT found: " << vsPath << endl;
-        return false;
-    }
-    
-    // 실제 컴파일도 같은 경로 사용 (수정 부분)
-    HRESULT hr = D3DCompileFromFile(
-        vsPath.c_str(),  // ← 여기를 수정
-        nullptr, 
-        nullptr, 
-        "main", 
-        "vs_5_0", 
-        0, 
-        0, 
-        vsBlob.GetAddressOf(), 
-        errorBlob.GetAddressOf()
-    );
-
-    if (FAILED(hr))
-    {
-        if (errorBlob)
-        {
-            cout << "Vertex Shader Error: " << (char*)errorBlob->GetBufferPointer() << endl;
-        }
-        cout << "Failed to load vertex shader from: ";
-        wcout << vsPath << endl;
+        cout << "Shader initialization failed." << endl;
         return false;
     }
 
-    hr = D3DCompileFromFile(
-        psPath.c_str(),  // ← 여기를 수정
-        nullptr, 
-        nullptr, 
-        "main", 
-        "ps_5_0", 
-        0, 
-        0, 
-        psBlob.GetAddressOf(), 
-        errorBlob.GetAddressOf()
-    );
-    
-    if (FAILED(hr))
-    {
-        if (errorBlob)
-        {
-            cout << "Pixel Shader Error: " << (char*)errorBlob->GetBufferPointer() << endl;
-        }
-        cout << "Failed to load pixel shader from: ";
-        wcout << psPath << endl;
-        return false;
-    }
-
-    hr = m_device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, m_vertexShader.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
-    hr = m_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, m_pixelShader.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
-    D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
-        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}};
-    hr = m_device->CreateInputLayout(layoutDesc, 1, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), m_inputLayout.GetAddressOf());
-    return SUCCEEDED(hr);
+    return true;
 }
 
-// 버퍼 생성 (예시: 삼각형)
-bool Renderer::CreateBuffers()
-{
-    struct Vertex
-    {
-        float x, y, z;
-    };
-    Vertex vertices[] = {
-        {0.0f, 0.5f, 0.0f},
-        {0.5f, -0.5f, 0.0f},
-        {-0.5f, -0.5f, 0.0f}};
-    D3D11_BUFFER_DESC vbDesc = {};
-    vbDesc.Usage = D3D11_USAGE_DEFAULT;
-    vbDesc.ByteWidth = sizeof(vertices);
-    vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    D3D11_SUBRESOURCE_DATA vbData = {};
-    vbData.pSysMem = vertices;
-    HRESULT hr = m_device->CreateBuffer(&vbDesc, &vbData, m_vertexBuffer.GetAddressOf());
-    if (FAILED(hr))
-        return false;
-
-    unsigned short indices[] = {0, 1, 2};
-    D3D11_BUFFER_DESC ibDesc = {};
-    ibDesc.Usage = D3D11_USAGE_DEFAULT;
-    ibDesc.ByteWidth = sizeof(indices);
-    ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    D3D11_SUBRESOURCE_DATA ibData = {};
-    ibData.pSysMem = indices;
-    hr = m_device->CreateBuffer(&ibDesc, &ibData, m_indexBuffer.GetAddressOf());
-    return SUCCEEDED(hr);
-}
-
-// 렌더링 상태 설정
-void Renderer::SetRenderStates()
-{
-    m_context->IASetInputLayout(m_inputLayout.Get());
-    UINT stride = sizeof(float) * 3;
-    UINT offset = 0;
-    m_context->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
-    m_context->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    m_context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-    m_context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-}
-
-// 오브젝트 렌더링 함수
+// InteriorObject 렌더링을 위한 Draw()
 void Renderer::Draw(InteriorObject *interiorObject)
 {
-    SetRenderStates();
-    m_context->DrawIndexed(3, 0, 0); // 예시: 삼각형
+    if (!interiorObject) return;
+    
+    MeshRenderer* meshRenderer = interiorObject->GetMeshRenderer();
+    Transform* transform = interiorObject->GetTransform();
+    
+    if (meshRenderer && transform)
+    {
+        // 상수 버퍼 업데이트 (modelMatrix)
+        UpdateConstantBuffer(transform->GetModelMatrix());
+        
+        // 렌더링
+        meshRenderer->Render(m_context);
+    }
+}
+
+// Constant Buffer 업데이트
+void Renderer::UpdateConstantBuffer(const Matrix& modelMatrix)
+{
+    // 뷰 행렬과 프로젝션 행렬 설정 (카메라 구현 후 수정 필요)
+    Matrix viewMatrix = Matrix::CreateLookAt(Vector3(0, 0, -5), Vector3(0, 0, 0), Vector3(0, 1, 0));
+    Matrix projMatrix = Matrix::CreatePerspectiveFieldOfView(
+        DirectX::XM_PI / 4.0f,  // 45도 시야각
+        static_cast<float>(m_currentWidth) / static_cast<float>(m_currentHeight), // 실제 종횡비 사용
+        0.1f, 100.0f           // Near, Far 평면
+    );
+    
+    BasicVertexConstantData cbData;
+
+    // invTranspose 계산 (노멀 변환용)
+    Matrix invTranspose = modelMatrix.Invert().Transpose();
+
+    cbData.modelMatrix = modelMatrix.Transpose();  // HLSL은 열 우선이므로 전치
+    cbData.invTranspose = invTranspose.Transpose();
+    cbData.viewMatrix = viewMatrix.Transpose();
+    cbData.projMatrix = projMatrix.Transpose();
+    
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+    m_context->Map(m_vertexConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    memcpy(mappedResource.pData, &cbData, sizeof(BasicVertexConstantData));
+    m_context->Unmap(m_vertexConstantBuffer.Get(), 0);
+    
+    m_context->VSSetConstantBuffers(0, 1, m_vertexConstantBuffer.GetAddressOf());
 }
 
 // 윈도우 크기 변경 처리

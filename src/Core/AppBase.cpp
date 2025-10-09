@@ -1,26 +1,57 @@
 #include <algorithm>
 #include <tchar.h>
 
-#include "AppBase.h" // 자신의 헤더 파일
+#include "../Character/Camera.h"
+#include "../Components/Transform.h"
+#include "../Graphics/ModelLoader.h"
+#include "../Input/InputManager.h"
+#include "../Input/ObjectPicker.h"
+#include "../Scene/InteriorObject.h"
+#include "../UI/UIManager.h"
+#include "AppBase.h"
+
+// ImGui Win32 메시지 핸들러 선언
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace visualnnz
 {
 using namespace std;
+using namespace DirectX::SimpleMath;
 
 // RegisterClassEx()에서 멤버 함수를 직접 등록할 수가 없기 때문에
-// 클래스의 멤버 함수에서 간접적으로 메시지를 처리할 수 있도록 도와줍니다.
-// AppBase *g_appBase = nullptr;
+// 클래스의 멤버 함수에서 간접적으로 메시지를 처리할 수 있도록 도와준다.
+AppBase *g_appBase = nullptr;
+
+// RegisterClassEx()에서 실제로 등록될 콜백 함수
+LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    // g_appBase를 이용해서 간접적으로 멤버 함수 호출
+    return g_appBase->MsgProc(hWnd, msg, wParam, lParam);
+}
 
 AppBase::AppBase()
     : m_screenWidth(1280),
-      m_screenHeight(960)
+      m_screenHeight(720),
+      m_inputManager(nullptr)
 {
-    // TODO(visualnnz): AppBase 초기화 로직
+    g_appBase = this;
 
+    // 매니저들 초기화
+    m_uiManager = make_unique<UIManager>();
+    m_modelLoader = make_unique<ModelLoader>();
+    m_objectPicker = make_unique<ObjectPicker>();
+    m_camera = make_shared<Camera>();
+
+    cout << "AppBase constructor completed" << endl;
 }
 
 AppBase::~AppBase()
 {
+    cout << "AppBase destructor called" << endl;
+    if (m_uiManager)
+    {
+        m_uiManager->Shutdown();
+    }
 }
 
 bool AppBase::Initialize(HINSTANCE hInstance, int nCmdShow)
@@ -32,7 +63,7 @@ bool AppBase::Initialize(HINSTANCE hInstance, int nCmdShow)
     WNDCLASSEX wc = {};
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.style = CS_HREDRAW | CS_VREDRAW;
-    wc.lpfnWndProc = AppBase::WndProc; // 메시지 처리 함수 연결
+    wc.lpfnWndProc = WndProc; // 메시지 처리 함수 연결
     wc.hInstance = m_hInstance;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
@@ -45,9 +76,8 @@ bool AppBase::Initialize(HINSTANCE hInstance, int nCmdShow)
     }
 
     // 2. 윈도우 생성
-    // TODO(YourName): 해상도(width, height)를 외부에서 설정할 수 있도록 수정
-    int screenWidth = 1280;
-    int screenHeight = 720;
+    m_screenWidth = 1280;
+    m_screenHeight = 720;
 
     m_mainWindow = CreateWindowEx(
         WS_EX_APPWINDOW,
@@ -56,8 +86,8 @@ bool AppBase::Initialize(HINSTANCE hInstance, int nCmdShow)
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        screenWidth,
-        screenHeight,
+        m_screenWidth,
+        m_screenHeight,
         nullptr,
         nullptr,
         m_hInstance,
@@ -74,18 +104,85 @@ bool AppBase::Initialize(HINSTANCE hInstance, int nCmdShow)
     ShowWindow(m_mainWindow, nCmdShow);
     UpdateWindow(m_mainWindow);
 
+    cout << "Window created successfully" << endl;
     return true;
+}
+
+void AppBase::InitializeManagers()
+{
+    cout << "Initializing base managers..." << endl;
+
+    // InputManager 초기화
+    m_inputManager = &InputManager::GetInstance();
+    if (!m_inputManager->Initialize(m_mainWindow))
+    {
+        cout << "Failed to initialize InputManager!" << endl;
+        return;
+    }
+    m_inputManager->SetCamera(m_camera);
+
+    // Camera 초기화 - 화면 비율 설정
+    RECT clientRect;
+    GetClientRect(m_mainWindow, &clientRect);
+    int width = clientRect.right - clientRect.left;
+    int height = clientRect.bottom - clientRect.top;
+
+    float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    m_camera->SetPerspective(45.0f * 3.14159f / 180.0f, aspectRatio, 0.1f, 100.0f);
+    m_camera->SetPosition(Vector3(0.0f, 2.0f, 5.0f));
+    m_camera->SetTarget(Vector3(0.0f, 0.0f, 0.0f));
+
+    cout << "Base managers initialized successfully!" << endl;
+}
+
+void AppBase::SetupUICallbacks()
+{
+    cout << "Setting up UI callbacks..." << endl;
+
+    if (!m_uiManager)
+    {
+        cout << "UIManager is null!" << endl;
+        return;
+    }
+
+    // 모델 스폰 콜백
+    m_uiManager->SetOnModelSpawnCallback(
+        [this](const string &modelName)
+        {
+            cout << "Model spawn callback triggered: " << modelName << endl;
+            OnModelSpawn(modelName);
+        });
+
+    // 오브젝트 삭제 콜백
+    m_uiManager->SetOnObjectDeleteCallback(
+        [this](shared_ptr<InteriorObject> object)
+        {
+            cout << "Object delete callback triggered" << endl;
+            OnObjectDelete(object);
+        });
+
+    cout << "UI callbacks set up successfully!" << endl;
 }
 
 void AppBase::Shutdown()
 {
+    cout << "AppBase shutdown..." << endl;
+
+    if (m_uiManager)
+    {
+        m_uiManager->Shutdown();
+    }
+
     DestroyWindow(m_mainWindow);
-    // 윈도우 클래스 등록 해제 등
 }
 
 int AppBase::Run()
 {
-    // TODO(YourName): 고정밀 타이머 구현 (QueryPerformanceCounter)
+    // 고정밀 타이머 구현
+    LARGE_INTEGER frequency, prevTime, currTime;
+    QueryPerformanceFrequency(&frequency);
+    QueryPerformanceCounter(&prevTime);
+
     float deltaTime = 1.0f / 60.0f;
 
     MSG msg = {};
@@ -98,6 +195,20 @@ int AppBase::Run()
         }
         else
         {
+            // 델타 타임 계산
+            QueryPerformanceCounter(&currTime);
+            deltaTime = static_cast<float>(currTime.QuadPart - prevTime.QuadPart) / frequency.QuadPart;
+            prevTime = currTime;
+
+            // 최대 델타 타임 제한 (60fps 기준 최소)
+            if (deltaTime > 1.0f / 30.0f)
+                deltaTime = 1.0f / 60.0f;
+
+            // 씬 오브젝트들과 UI 업데이트
+            UpdateSceneObjects(deltaTime);
+            UpdateUI();
+
+            // MainApp의 업데이트와 렌더링
             Update(deltaTime);
             Render();
         }
@@ -110,37 +221,239 @@ HWND AppBase::GetWindowHandle() const
     return m_mainWindow;
 }
 
-LRESULT CALLBACK AppBase::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK AppBase::MsgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    AppBase *app = nullptr;
+    // ImGui 메시지 먼저 처리
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+        return true;
 
-    if (message == WM_NCCREATE)
+    switch (message)
     {
-        // CreateWindowEx의 마지막 인자로 넘긴 this 포인터를 받아와 저장
-        CREATESTRUCT *createStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
-        app = reinterpret_cast<AppBase *>(createStruct->lpCreateParams);
-        SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(app));
-        app->m_mainWindow = hWnd;
-    }
-    else
-    {
-        // 저장된 this 포인터를 다시 불러옴
-        app = reinterpret_cast<AppBase *>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-    }
+        case WM_SIZE:
+            // 윈도우 크기 변경 처리
+            if (m_camera && wParam != SIZE_MINIMIZED)
+            {
+                RECT clientRect;
+                GetClientRect(m_mainWindow, &clientRect);
+                int width = clientRect.right - clientRect.left;
+                int height = clientRect.bottom - clientRect.top;
 
-    if (app)
-    {
-        // TODO(YourName): ImGui 메시지 처리기 연결
-        // ex) ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
-
-        switch (message)
-        {
-            case WM_DESTROY:
-                PostQuitMessage(0);
-                return 0;
-        }
+                if (width > 0 && height > 0)
+                {
+                    float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+                    m_camera->SetPerspective(45.0f * 3.14159f / 180.0f, aspectRatio, 0.1f, 100.0f);
+                }
+            }
+            break;
+        case WM_LBUTTONDOWN:
+            int x = LOWORD(lParam);
+            int y = HIWORD(lParam);
+            OnMouseClick(x, y);
+            m_lastMouseX = x;
+            m_lastMouseY = y;
+            break;
+        case WM_MOUSEMOVE:
+            int x = LOWORD(lParam);
+            int y = HIWORD(lParam);
+            if (m_isDragging)
+            {
+                OnMouseMove(x, y);
+            }
+            m_lastMouseX = x;
+            m_lastMouseY = y;
+            break;
+        case WM_LBUTTONUP:
+            int x = LOWORD(lParam);
+            int y = HIWORD(lParam);
+            OnMouseRelease(x, y);
+            break;
+        case WM_KEYDOWN:
+            OnKeyDown(wParam);
+            break;
+        case WM_KEYUP:
+            OnKeyUp(wParam);
+            break;
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
     }
 
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
+
+void AppBase::UpdateSceneObjects(float deltaTime)
+{
+    // InputManager 업데이트
+    if (m_inputManager)
+    {
+        m_inputManager->Update(deltaTime);
+    }
+
+    // 씬 오브젝트들 업데이트
+    for (auto &obj : m_sceneObjects)
+    {
+        if (obj)
+        {
+            obj->Update(deltaTime);
+        }
+    }
+}
+
+void AppBase::UpdateUI()
+{
+    // UI에 씬 오브젝트 목록 업데이트
+    if (m_uiManager)
+    {
+        m_uiManager->UpdateObjectList(m_sceneObjects);
+    }
+}
+
+// 기본 이벤트 핸들러 구현들 - MainApp에서 오버라이드 가능
+void AppBase::OnModelSpawn(const string &modelName)
+{
+    cout << "AppBase::OnModelSpawn - " << modelName << endl;
+    // 기본 구현: MainApp에서 오버라이드 필요
+}
+
+void AppBase::OnObjectDelete(shared_ptr<InteriorObject> object)
+{
+    if (!object)
+        return;
+
+    auto it = find(m_sceneObjects.begin(), m_sceneObjects.end(), object);
+    if (it != m_sceneObjects.end())
+    {
+        cout << "Deleting object: " << object->GetObjectID() << endl;
+        m_sceneObjects.erase(it);
+
+        if (m_selectedObject == object)
+        {
+            m_selectedObject = nullptr;
+            if (m_uiManager)
+            {
+                m_uiManager->SetSelectedObject(nullptr);
+            }
+        }
+    }
+}
+
+void AppBase::OnMouseClick(int x, int y)
+{
+    if (!m_objectPicker || !m_camera)
+        return;
+
+    RECT clientRect;
+    GetClientRect(m_mainWindow, &clientRect);
+    int screenWidth = clientRect.right - clientRect.left;
+    int screenHeight = clientRect.bottom - clientRect.top;
+
+    cout << "Mouse click at: " << x << ", " << y << endl;
+
+    auto pickResult = m_objectPicker->PickObjectAtScreenPos(
+        x, y, screenWidth, screenHeight, *m_camera, m_sceneObjects);
+
+    if (pickResult.hit)
+    {
+        cout << "Object picked: " << pickResult.object->GetObjectID() << endl;
+
+        // 기존 선택 해제
+        if (m_selectedObject)
+        {
+            m_selectedObject->SetSelected(false);
+        }
+
+        m_selectedObject = pickResult.object;
+        m_selectedObject->SetSelected(true);
+
+        if (m_uiManager)
+        {
+            m_uiManager->SetSelectedObject(m_selectedObject);
+        }
+
+        // 드래그 시작
+        m_isDragging = true;
+        Vector3 objPos = m_selectedObject->GetTransform()->GetPosition();
+        m_dragOffset = objPos - pickResult.hitPoint;
+    }
+    else
+    {
+        cout << "No object picked" << endl;
+        // 기존 선택 해제
+        if (m_selectedObject)
+        {
+            m_selectedObject->SetSelected(false);
+        }
+        m_selectedObject = nullptr;
+        if (m_uiManager)
+        {
+            m_uiManager->SetSelectedObject(nullptr);
+        }
+    }
+}
+
+void AppBase::OnMouseMove(int x, int y)
+{
+    if (m_isDragging && m_selectedObject && m_objectPicker && m_camera)
+    {
+        RECT clientRect;
+        GetClientRect(m_mainWindow, &clientRect);
+        int screenWidth = clientRect.right - clientRect.left;
+        int screenHeight = clientRect.bottom - clientRect.top;
+
+        Ray ray = m_objectPicker->CreatePickingRay(x, y, screenWidth, screenHeight, *m_camera);
+
+        // 간단한 평면 교차 계산 (Y=0 평면)
+        if (abs(ray.direction.y) > 0.001f) // 0으로 나누기 방지
+        {
+            float t = -ray.position.y / ray.direction.y;
+            if (t > 0)
+            {
+                Vector3 newPos = ray.position + ray.direction * t + m_dragOffset;
+                m_selectedObject->GetTransform()->SetPosition(newPos);
+            }
+        }
+    }
+}
+
+void AppBase::OnMouseRelease(int x, int y)
+{
+    if (m_isDragging)
+    {
+        cout << "Mouse released, ending drag" << endl;
+        m_isDragging = false;
+    }
+}
+
+void AppBase::OnKeyDown(WPARAM wParam)
+{
+    switch (wParam)
+    {
+        case VK_ESCAPE:
+            // 선택 해제
+            if (m_selectedObject)
+            {
+                m_selectedObject->SetSelected(false);
+            }
+            m_selectedObject = nullptr;
+            if (m_uiManager)
+            {
+                m_uiManager->SetSelectedObject(nullptr);
+            }
+            cout << "Selection cleared" << endl;
+            break;
+        case VK_DELETE:
+            // 선택된 오브젝트 삭제
+            if (m_selectedObject)
+            {
+                OnObjectDelete(m_selectedObject);
+            }
+            break;
+    }
+}
+
+void AppBase::OnKeyUp(WPARAM wParam)
+{
+    // 키 릴리즈 이벤트 처리 (필요시 MainApp에서 오버라이드)
+}
+
 } // namespace visualnnz

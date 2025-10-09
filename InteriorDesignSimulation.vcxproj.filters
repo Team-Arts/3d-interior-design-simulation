@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="소스 파일">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="헤더 파일">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
@@ -13,35 +9,17 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="소스 파일\Components">
-      <UniqueIdentifier>{9528e5e2-d300-462c-9b51-e241e5733d29}</UniqueIdentifier>
-    </Filter>
     <Filter Include="헤더 파일\Components">
       <UniqueIdentifier>{1fb43a12-567b-4e63-81c0-5f6a40f37cf9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\Core">
-      <UniqueIdentifier>{2fc7b921-ae34-4262-ac51-56bd3fdd2cee}</UniqueIdentifier>
     </Filter>
     <Filter Include="헤더 파일\Core">
       <UniqueIdentifier>{d2c31be3-c67d-4792-93ad-402887a8ef9f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Graphics">
-      <UniqueIdentifier>{ddcfd97e-58bf-4740-a9d9-a416931f220e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\Graphics\shaders">
-      <UniqueIdentifier>{c3c12af0-670b-43f1-8bda-338bf667ce2c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="헤더 파일\Graphics">
       <UniqueIdentifier>{b9754265-f95e-41d5-b5a5-d748501d39ad}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Input">
-      <UniqueIdentifier>{39692d9a-bb7f-4989-8c49-b8b21397a6e0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="헤더 파일\Input">
       <UniqueIdentifier>{51e37a68-aa35-4b8d-ae98-f50d7354568f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\Scene">
-      <UniqueIdentifier>{ee2eebd0-4ff9-4902-b58c-76dcf2d094a9}</UniqueIdentifier>
     </Filter>
     <Filter Include="헤더 파일\Scene">
       <UniqueIdentifier>{a6c8ce02-78c3-45c9-80be-ed33502ba526}</UniqueIdentifier>
@@ -49,8 +27,45 @@
     <Filter Include="헤더 파일\UI">
       <UniqueIdentifier>{d4fa64d9-0574-4afd-b483-69d025163abd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="asset">
+      <UniqueIdentifier>{beab8898-abb3-4f34-b0f7-ab1d76e617ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="asset\models">
+      <UniqueIdentifier>{6b0c9c57-c803-4799-99ce-0afebd1839b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="asset\textures">
+      <UniqueIdentifier>{b940b1cc-f45d-4807-b870-e89e76e8fdc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="소스 파일\Components">
+      <UniqueIdentifier>{9528e5e2-d300-462c-9b51-e241e5733d29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Core">
+      <UniqueIdentifier>{2fc7b921-ae34-4262-ac51-56bd3fdd2cee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Graphics">
+      <UniqueIdentifier>{ddcfd97e-58bf-4740-a9d9-a416931f220e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Graphics\shaders">
+      <UniqueIdentifier>{c3c12af0-670b-43f1-8bda-338bf667ce2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Input">
+      <UniqueIdentifier>{39692d9a-bb7f-4989-8c49-b8b21397a6e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Scene">
+      <UniqueIdentifier>{ee2eebd0-4ff9-4902-b58c-76dcf2d094a9}</UniqueIdentifier>
+    </Filter>
     <Filter Include="소스 파일\UI">
       <UniqueIdentifier>{585a5a1f-c104-43e1-82af-fa94fca0b378}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Character">
+      <UniqueIdentifier>{e4db18a5-cacc-4d73-9d89-dcddfc58ff47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Character">
+      <UniqueIdentifier>{6ded1147-ffef-4b72-85c3-4de0e849ea59}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -59,9 +74,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Components\Camera.cpp">
-      <Filter>소스 파일\Components</Filter>
-    </ClCompile>
     <ClCompile Include="src\Components\Light.cpp">
       <Filter>소스 파일\Components</Filter>
     </ClCompile>
@@ -113,11 +125,17 @@
     <ClCompile Include="src\UI\UIManager.cpp">
       <Filter>소스 파일\UI</Filter>
     </ClCompile>
+    <ClCompile Include="src\Character\Camera.cpp">
+      <Filter>소스 파일\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\ModelLoader.cpp">
+      <Filter>소스 파일\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Input\ObjectPicker.cpp">
+      <Filter>소스 파일\Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Components\Camera.h">
-      <Filter>헤더 파일\Components</Filter>
-    </ClInclude>
     <ClInclude Include="src\Components\Light.h">
       <Filter>헤더 파일\Components</Filter>
     </ClInclude>
@@ -166,6 +184,18 @@
     <ClInclude Include="src\UI\UIManager.h">
       <Filter>헤더 파일\UI</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Character\Camera.h">
+      <Filter>헤더 파일\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\ModelLoader.h">
+      <Filter>헤더 파일\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Input\ObjectPicker.h">
+      <Filter>헤더 파일\Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\Graphics\shaders\BasicPixelShader.hlsl">
@@ -174,5 +204,21 @@
     <FxCompile Include="src\Graphics\shaders\BasicVertexShader.hlsl">
       <Filter>소스 파일\Graphics\shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Graphics\shaders\Common.hlsli">
+      <Filter>소스 파일\Graphics\shaders</Filter>
+    </None>
+    <None Include="model1.bin">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="model2.bin">
+      <Filter>리소스 파일</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
 </Project>

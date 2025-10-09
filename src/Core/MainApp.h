@@ -1,20 +1,24 @@
 #pragma once
 
 #include <memory>
+#include <vector>
+#include <directxtk/SimpleMath.h>
 
 #include "AppBase.h"
 
 namespace visualnnz
 {
+using DirectX::SimpleMath::Vector3;
 using std::unique_ptr;
+using std::shared_ptr;
 using std::vector;
 using std::wstring;
 
 // 전방 선언
 class Renderer;
-// class SceneManager;
-// class UIManager;
-// class InputManager;
+class InteriorObject;
+class Mesh;
+class Shader;
 
 // AppBase를 상속받아 실제 프로그램 로직을 구현하는 클래스
 class MainApp : public AppBase
@@ -23,18 +27,28 @@ public:
     MainApp();
     virtual ~MainApp() override;
 
-    // AppBase 가상 함수 재정의
+    // AppBase 가상 함수 오버라이드
     virtual bool Initialize(HINSTANCE hInstance, int nCmdShow) override;
     virtual void Update(float deltaTime) override;
     virtual void Render() override;
 
-private:
-    // 프로그램이 관리할 핵심 모듈들
-    unique_ptr<Renderer> m_renderer;
-    // unique_ptr<SceneManager> m_sceneManager;
-    // unique_ptr<UIManager> m_uiManager;
-    // unique_ptr<InputManager> m_inputManager;
+protected:
+    // AppBase에서 요구하는 가상 함수들 구현
+    virtual bool InitializeGraphics() override;
+    virtual void CreateTestObjects() override;
+    virtual void InitializeManagers() override;
 
-    
+    // 이벤트 핸들러 오버라이드 (필요한 것만)
+    virtual void OnModelSpawn(const std::string& modelName) override;
+
+private:
+    // MainApp 전용 멤버들
+    unique_ptr<Renderer> m_renderer;
+
+    // 테스트 오브젝트들
+    unique_ptr<InteriorObject> m_testCube;
+    shared_ptr<Mesh> m_cubeMesh;
+    shared_ptr<Shader> m_basicShader;
 };
+
 } // namespace visualnnz

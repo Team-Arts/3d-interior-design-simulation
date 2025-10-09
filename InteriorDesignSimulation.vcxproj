@@ -132,7 +132,7 @@
     <ResourceCompile Include="InteriorDesignSimulation.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Components\Camera.cpp" />
+    <ClCompile Include="src\Character\Camera.cpp" />
     <ClCompile Include="src\Components\Light.cpp" />
     <ClCompile Include="src\Components\MeshRenderer.cpp" />
     <ClCompile Include="src\Components\Transform.cpp" />
@@ -141,10 +141,12 @@
     <ClCompile Include="src\Core\Timer.cpp" />
     <ClCompile Include="src\Graphics\Material.cpp" />
     <ClCompile Include="src\Graphics\Mesh.cpp" />
+    <ClCompile Include="src\Graphics\ModelLoader.cpp" />
     <ClCompile Include="src\Graphics\Renderer.cpp" />
     <ClCompile Include="src\Graphics\Shader.cpp" />
     <ClCompile Include="src\Graphics\Texture.cpp" />
     <ClCompile Include="src\Input\InputManager.cpp" />
+    <ClCompile Include="src\Input\ObjectPicker.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Scene\InteriorObject.cpp" />
     <ClCompile Include="src\Scene\Scene.cpp" />
@@ -152,7 +154,8 @@
     <ClCompile Include="src\UI\UIManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Components\Camera.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="src\Character\Camera.h" />
     <ClInclude Include="src\Components\Light.h" />
     <ClInclude Include="src\Components\MeshRenderer.h" />
     <ClInclude Include="src\Components\Transform.h" />
@@ -161,10 +164,12 @@
     <ClInclude Include="src\Core\Timer.h" />
     <ClInclude Include="src\Graphics\Material.h" />
     <ClInclude Include="src\Graphics\Mesh.h" />
+    <ClInclude Include="src\Graphics\ModelLoader.h" />
     <ClInclude Include="src\Graphics\Renderer.h" />
     <ClInclude Include="src\Graphics\Shader.h" />
     <ClInclude Include="src\Graphics\Texture.h" />
     <ClInclude Include="src\Input\InputManager.h" />
+    <ClInclude Include="src\Input\ObjectPicker.h" />
     <ClInclude Include="src\Scene\InteriorObject.h" />
     <ClInclude Include="src\Scene\Scene.h" />
     <ClInclude Include="src\Scene\SceneManager.h" />
@@ -179,6 +184,14 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="model1.bin" />
+    <None Include="model2.bin" />
+    <None Include="src\Graphics\shaders\Common.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,0 +1,402 @@
+#include "UIManager.h"
+#include "../Scene/InteriorObject.h"
+#include "../Graphics/ModelLoader.h"
+#include "../Components/Transform.h"
+
+#include <iostream>
+
+namespace visualnnz
+{
+using namespace std;
+using namespace DirectX::SimpleMath;
+
+UIManager::UIManager()
+{
+    m_modelLoader = make_shared<ModelLoader>();
+    cout << "UIManager constructor completed" << endl;
+}
+
+UIManager::~UIManager() = default;
+
+bool UIManager::Initialize(HWND hWnd, ComPtr<ID3D11Device> device, ComPtr<ID3D11DeviceContext> context)
+{
+    cout << "UIManager::Initialize starting..." << endl;
+    
+    // ImGui 초기화
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    // ImGui 스타일 설정
+    ImGui::StyleColorsDark();
+
+    // Platform/Renderer 백엔드 초기화
+    if (!ImGui_ImplWin32_Init(hWnd))
+    {
+        cout << "Failed to initialize ImGui Win32!" << endl;
+        return false;
+    }
+
+    if (!ImGui_ImplDX11_Init(device.Get(), context.Get()))
+    {
+        cout << "Failed to initialize ImGui DX11!" << endl;
+        return false;
+    }
+
+    // 사용 가능한 모델 목록 로드
+    m_availableModels = m_modelLoader->GetAvailableModels();
+    
+    cout << "UIManager initialized successfully!" << endl;
+    cout << "Available models: " << m_availableModels.size() << endl;
+    
+    // 테스트용 모델이 없으면 기본 항목 추가
+    if (m_availableModels.empty())
+    {
+        m_availableModels.push_back("Test Cube 1");
+        m_availableModels.push_back("Test Cube 2");
+        m_availableModels.push_back("Test Cube 3");
+        cout << "No GLB models found, added test cubes" << endl;
+    }
+
+    return true;
+}
+
+void UIManager::Shutdown()
+{
+    cout << "UIManager::Shutdown" << endl;
+    ImGui_ImplDX11_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
+}
+
+void UIManager::BeginFrame()
+{
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+}
+
+void UIManager::Render()
+{
+    // 데모 윈도우 표시 (UI가 작동하는지 확인용)
+    if (m_showDemo)
+        ImGui::ShowDemoWindow(&m_showDemo);
+    
+    RenderMainMenuBar();
+    
+    if (m_showObjectBrowser)
+        RenderObjectBrowser();
+        
+    if (m_showSceneHierarchy)
+        RenderSceneHierarchy();
+        
+    if (m_showInspector)
+        RenderInspector();
+        
+    RenderToolbar();
+    
+    // 상태 표시 윈도우 (디버깅용)
+    RenderStatusWindow();
+}
+
+void UIManager::EndFrame()
+{
+    ImGui::Render();
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+void UIManager::RenderMainMenuBar()
+{
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("New Scene")) {}
+            if (ImGui::MenuItem("Open Scene")) {}
+            if (ImGui::MenuItem("Save Scene")) {}
+            ImGui::Separator();
+            if (ImGui::MenuItem("Exit")) {}
+            ImGui::EndMenu();
+        }
+        
+        if (ImGui::BeginMenu("Edit"))
+        {
+            if (ImGui::MenuItem("Undo")) {}
+            if (ImGui::MenuItem("Redo")) {}
+            ImGui::EndMenu();
+        }
+        
+        if (ImGui::BeginMenu("Window"))
+        {
+            ImGui::MenuItem("Object Browser", nullptr, &m_showObjectBrowser);
+            ImGui::MenuItem("Scene Hierarchy", nullptr, &m_showSceneHierarchy);
+            ImGui::MenuItem("Inspector", nullptr, &m_showInspector);
+            ImGui::Separator();
+            ImGui::MenuItem("ImGui Demo", nullptr, &m_showDemo);
+            ImGui::EndMenu();
+        }
+        
+        ImGui::Text("Objects: %d", (int)m_sceneObjects.size());
+        
+        ImGui::EndMainMenuBar();
+    }
+}
+
+void UIManager::RenderObjectBrowser()
+{
+    ImGui::SetNextWindowPos(ImVec2(10, 30), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
+    
+    ImGui::Begin("Object Browser", &m_showObjectBrowser);
+    
+    ImGui::Text("Available Models:");
+    ImGui::Separator();
+    
+    if (m_availableModels.empty())
+    {
+        ImGui::Text("No models found in asset/models/");
+        ImGui::Text("Place .glb or .gltf files there");
+    }
+    else
+    {
+        for (const auto& modelName : m_availableModels)
+        {
+            if (ImGui::Button(modelName.c_str(), ImVec2(-1, 0)))
+            {
+                cout << "Button clicked: " << modelName << endl;
+                if (m_onModelSpawn)
+                {
+                    m_onModelSpawn(modelName);
+                }
+                else
+                {
+                    cout << "m_onModelSpawn callback is null!" << endl;
+                }
+            }
+            
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("Click to add to scene");
+            }
+        }
+    }
+    
+    ImGui::End();
+}
+
+void UIManager::RenderSceneHierarchy()
+{
+    ImGui::SetNextWindowPos(ImVec2(10, 350), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_FirstUseEver);
+    
+    ImGui::Begin("Scene Hierarchy", &m_showSceneHierarchy);
+    
+    ImGui::Text("Scene Objects (%d):", (int)m_sceneObjects.size());
+    ImGui::Separator();
+    
+    if (m_sceneObjects.empty())
+    {
+        ImGui::Text("No objects in scene");
+        ImGui::Text("Add objects from Object Browser");
+    }
+    else
+    {
+        for (auto& obj : m_sceneObjects)
+        {
+            if (!obj) continue;
+            
+            bool isSelected = (obj == m_selectedObject);
+            
+            // 선택된 오브젝트는 다른 색상으로 표시
+            if (isSelected)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
+            }
+            
+            if (ImGui::Selectable(obj->GetObjectID().c_str(), isSelected))
+            {
+                cout << "Object selected in hierarchy: " << obj->GetObjectID() << endl;
+                
+                // 기존 선택 해제
+                if (m_selectedObject)
+                {
+                    m_selectedObject->SetSelected(false);
+                }
+                
+                m_selectedObject = obj;
+                obj->SetSelected(true);
+            }
+            
+            if (isSelected)
+            {
+                ImGui::PopStyleColor();
+            }
+            
+            // 우클릭 컨텍스트 메뉴
+            if (ImGui::BeginPopupContextItem())
+            {
+                if (ImGui::MenuItem("Delete"))
+                {
+                    cout << "Delete requested for: " << obj->GetObjectID() << endl;
+                    if (m_onObjectDelete)
+                    {
+                        m_onObjectDelete(obj);
+                    }
+                }
+                ImGui::EndPopup();
+            }
+        }
+    }
+    
+    ImGui::End();
+}
+
+void UIManager::RenderInspector()
+{
+    ImGui::SetNextWindowPos(ImVec2(300, 30), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(300, 400), ImGuiCond_FirstUseEver);
+    
+    ImGui::Begin("Inspector", &m_showInspector);
+    
+    if (m_selectedObject)
+    {
+        ImGui::Text("Object: %s", m_selectedObject->GetObjectID().c_str());
+        ImGui::Text("Type: %s", m_selectedObject->GetObjectType().c_str());
+        ImGui::Separator();
+        
+        // Transform 컴포넌트
+        if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            auto transform = m_selectedObject->GetTransform();
+            
+            Vector3 pos = transform->GetPosition();
+            Vector3 rot = transform->GetRotation();
+            Vector3 scale = transform->GetScale();
+            
+            if (ImGui::DragFloat3("Position", &pos.x, 0.1f))
+            {
+                transform->SetPosition(pos);
+            }
+            
+            if (ImGui::DragFloat3("Rotation", &rot.x, 1.0f))
+            {
+                transform->SetRotation(rot);
+            }
+            
+            if (ImGui::DragFloat3("Scale", &scale.x, 0.1f, 0.1f, 10.0f))
+            {
+                transform->SetScale(scale);
+            }
+        }
+        
+        // 추가 정보
+        if (ImGui::CollapsingHeader("Object Info"))
+        {
+            ImGui::Text("Selected: %s", m_selectedObject->IsSelected() ? "Yes" : "No");
+            ImGui::Text("Picked Up: %s", m_selectedObject->IsPickedUp() ? "Yes" : "No");
+        }
+    }
+    else
+    {
+        ImGui::Text("No object selected");
+        ImGui::Separator();
+        ImGui::Text("Click on an object in the scene");
+        ImGui::Text("or select from Scene Hierarchy");
+    }
+    
+    ImGui::End();
+}
+
+void UIManager::RenderToolbar()
+{
+    ImGui::SetNextWindowPos(ImVec2(10, 570), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(400, 60), ImGuiCond_FirstUseEver);
+    
+    ImGui::Begin("Toolbar", nullptr, 
+        ImGuiWindowFlags_NoTitleBar | 
+        ImGuiWindowFlags_NoResize | 
+        ImGuiWindowFlags_NoScrollbar);
+    
+    if (ImGui::Button("Select Tool"))
+    {
+        cout << "Select tool activated" << endl;
+    }
+    
+    ImGui::SameLine();
+    if (ImGui::Button("Move Tool"))
+    {
+        cout << "Move tool activated" << endl;
+    }
+    
+    ImGui::SameLine();
+    if (ImGui::Button("Rotate Tool"))
+    {
+        cout << "Rotate tool activated" << endl;
+    }
+    
+    ImGui::SameLine();
+    if (ImGui::Button("Scale Tool"))
+    {
+        cout << "Scale tool activated" << endl;
+    }
+    
+    ImGui::SameLine();
+    ImGui::Separator();
+    
+    ImGui::SameLine();
+    if (ImGui::Button("Reset Camera"))
+    {
+        cout << "Camera reset requested" << endl;
+    }
+    
+    ImGui::End();
+}
+
+void UIManager::RenderStatusWindow()
+{
+    ImGui::SetNextWindowPos(ImVec2(650, 30), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiCond_FirstUseEver);
+    
+    ImGui::Begin("Status", nullptr);
+    
+    ImGui::Text("Application Status:");
+    ImGui::Separator();
+    ImGui::Text("Scene Objects: %d", (int)m_sceneObjects.size());
+    ImGui::Text("Available Models: %d", (int)m_availableModels.size());
+    ImGui::Text("Selected Object: %s", 
+        m_selectedObject ? m_selectedObject->GetObjectID().c_str() : "None");
+    
+    ImGui::Separator();
+    ImGui::Text("Controls:");
+    ImGui::Text("- Click objects to select");
+    ImGui::Text("- Drag to move objects");
+    ImGui::Text("- ESC to deselect");
+    ImGui::Text("- DEL to delete selected");
+    
+    ImGui::End();
+}
+
+void UIManager::UpdateObjectList(const vector<shared_ptr<InteriorObject>>& objects)
+{
+    m_sceneObjects = objects;
+}
+
+void UIManager::SetSelectedObject(shared_ptr<InteriorObject> object)
+{
+    // 기존 선택 해제
+    if (m_selectedObject)
+    {
+        m_selectedObject->SetSelected(false);
+    }
+    
+    m_selectedObject = object;
+    
+    // 새로운 선택 표시
+    if (m_selectedObject)
+    {
+        m_selectedObject->SetSelected(true);
+    }
+}
+
+} // namespace visualnnz

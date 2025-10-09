@@ -1,14 +1,19 @@
 #pragma once
 
 #include <d3d11.h>
+#include <directxtk/SimpleMath.h>
 #include <wrl.h>
+#include <memory>
 
 namespace visualnnz
 {
 using Microsoft::WRL::ComPtr;
+using DirectX::SimpleMath::Matrix;
+using std::unique_ptr;
 
 // 전방 선언
 class InteriorObject;
+class Shader;
 
 class Renderer
 {
@@ -20,7 +25,7 @@ public:
     void Shutdown();
 
     // 렌더링 사이클 함수
-    void BeginScene(float r, float g, float b, float a);
+    void BeginScene(float *clearColor);
     void EndScene();
 
     // 그리기 함수
@@ -45,6 +50,8 @@ private:
 
     // 윈도우 크기 변경 처리
     bool OnWindowResize(int width, int height);
+    bool CreateConstantBuffer();
+    void UpdateConstantBuffer(const Matrix &worldMatrix);
 
     UINT m_numQualityLevels = 0;
     
@@ -63,15 +70,36 @@ private:
     ComPtr<ID3D11DepthStencilView> m_depthStencilView;
     ComPtr<ID3D11DepthStencilState> m_depthStencilState;
 
-    // 셰이더, 입력 레이아웃, 버퍼
-    ComPtr<ID3D11VertexShader> m_vertexShader;
-    ComPtr<ID3D11PixelShader> m_pixelShader;
-    ComPtr<ID3D11InputLayout> m_inputLayout;
+    // 버퍼 리소스
     ComPtr<ID3D11Buffer> m_vertexBuffer;
     ComPtr<ID3D11Buffer> m_indexBuffer;
+    ComPtr<ID3D11Buffer> m_vertexConstantBuffer;
 
     ComPtr<ID3D11RasterizerState> m_rasterizerState;
 
     D3D11_VIEWPORT m_screenViewport;
+
+    // Renderer에서 관리하는 모듈
+    unique_ptr<Shader> m_shader;
+
+    // 상수 버퍼 데이터 구조체
+    struct BasicVertexConstantData
+    {
+        Matrix modelMatrix;
+        Matrix invTranspose;
+        Matrix viewMatrix;
+        Matrix projMatrix;
+    };
+
+    BasicVertexConstantData m_vertexConstantData;
+
+    //struct BasicPixelConstantData
+    //{
+    //    Vector3 eyeWorld;         // 12
+    //    bool useTexture;          // bool 1 + 3 padding
+    //    Material material;        // 48
+    //    Light lights[MAX_LIGHTS]; // 48 * MAX_LIGHTS
+    //    Vector4 indexColor;       // 피킹(Picking)에 사용
+    //};
 };
 } // namespace visualnnz
