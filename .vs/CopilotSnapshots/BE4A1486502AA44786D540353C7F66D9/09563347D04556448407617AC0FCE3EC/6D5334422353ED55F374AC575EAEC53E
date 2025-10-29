@@ -1,0 +1,225 @@
+﻿#include "InputManager.h"
+#include "../Character/Camera.h"
+#include "../Character/Character.h"
+#include <iostream>
+
+namespace visualnnz
+{
+using namespace std;
+using namespace DirectX::SimpleMath;
+
+shared_ptr<InputManager> InputManager::s_instance = nullptr;
+
+InputManager& InputManager::GetInstance()
+{
+    if (!s_instance)
+    {
+        s_instance = shared_ptr<InputManager>(new InputManager());
+    }
+    return *s_instance;
+}
+
+bool InputManager::Initialize(HWND hWnd)
+{
+    m_hWnd = hWnd;
+    
+    // 키 상태 초기화
+    for (int i = 0; i < 256; ++i)
+    {
+        m_keyStates[i] = false;
+        m_prevKeyStates[i] = false;
+    }
+    
+    cout << "InputManager initialized successfully" << endl;
+    return true;
+}
+
+void InputManager::Update(float deltaTime)
+{
+    // 이전 프레임 키 상태 저장
+    for (int i = 0; i < 256; ++i)
+    {
+        m_prevKeyStates[i] = m_keyStates[i];
+        m_keyStates[i] = (GetAsyncKeyState(i) & 0x8000) != 0;
+    }
+
+    ProcessKeyboardInput(deltaTime);
+    ProcessMouseInput();
+}
+
+bool InputManager::IsKeyPressed(int vkCode) const
+{
+    return m_keyStates[vkCode] && !m_prevKeyStates[vkCode];
+}
+
+bool InputManager::IsKeyDown(int vkCode) const
+{
+    return m_keyStates[vkCode];
+}
+
+bool InputManager::IsKeyUp(int vkCode) const
+{
+    return !m_keyStates[vkCode] && m_prevKeyStates[vkCode];
+}
+
+void InputManager::OnMouseMove(int x, int y)
+{
+    if (m_firstMouse)
+    {
+        m_lastMouseX = x;
+        m_lastMouseY = y;
+        m_firstMouse = false;
+    }
+
+    int deltaX = x - m_lastMouseX;
+    int deltaY = y - m_lastMouseY;
+    m_lastMouseX = x;
+    m_lastMouseY = y;
+
+    // 카메라 모드에서만 마우스로 시점 조작
+    if (m_inputMode == InputMode::Camera && m_camera)
+    {
+        if (IsKeyDown(VK_RBUTTON))  // 우클릭 드래그로 카메라 회전
+        {
+            Vector3 rotation = m_camera->GetRotation();
+            rotation.y += deltaX * m_mouseSensitivity * 57.2958f;  // 라디안을 도로 변환
+            rotation.x += deltaY * m_mouseSensitivity * 57.2958f;
+            
+            // Pitch 제한
+            rotation.x = max(-89.0f, min(89.0f, rotation.x));
+            
+            m_camera->SetRotation(rotation);
+        }
+    }
+}
+
+void InputManager::ProcessKeyboardInput(float deltaTime)
+{
+    // 입력 모드 전환
+    if (IsKeyPressed('C'))
+    {
+        if (m_inputMode == InputMode::Camera)
+        {
+            m_inputMode = InputMode::Character;
+            cout << "Switched to Character control mode" << endl;
+        }
+        else
+        {
+            m_inputMode = InputMode::Camera;
+            cout << "Switched to Camera control mode" << endl;
+        }
+    }
+
+    // 현재 모드에 따라 입력 처리
+    switch (m_inputMode)
+    {
+        case InputMode::Camera:
+            ProcessCameraInput(deltaTime);
+            break;
+        case InputMode::Character:
+            ProcessCharacterInput(deltaTime);
+            break;
+        case InputMode::Object:
+            // 오브젝트 조작 모드는 추후 구현
+            break;
+    }
+}
+
+void InputManager::ProcessCameraInput(float deltaTime)
+{
+    if (!m_camera) return;
+
+    Vector3 movement = Vector3::Zero;
+    
+    // WASD 이동
+    if (IsKeyDown('W'))
+        movement += Vector3(0, 0, 1);
+    if (IsKeyDown('S'))
+        movement += Vector3(0, 0, -1);
+    if (IsKeyDown('A'))
+        movement += Vector3(-1, 0, 0);
+    if (IsKeyDown('D'))
+        movement += Vector3(1, 0, 0);
+    if (IsKeyDown('Q'))
+        movement += Vector3(0, -1, 0);
+    if (IsKeyDown('E'))
+        movement += Vector3(0, 1, 0);
+
+    // 이동 속도 조정
+    float speed = m_moveSpeed;
+    if (IsKeyDown(VK_SHIFT))
+        speed *= 2.0f;
+
+    if (movement.LengthSquared() > 0.0f)
+    {
+        movement.Normalize();
+        m_camera->Move(movement * speed * deltaTime);
+    }
+}
+
+void InputManager::ProcessCharacterInput(float deltaTime)
+{
+    if (!m_character) return;
+
+    bool moved = false;
+    
+    // WASD 이동
+    if (IsKeyDown('W'))
+    {
+        m_character->MoveForward(m_characterSpeed * deltaTime);
+        moved = true;
+    }
+    if (IsKeyDown('S'))
+    {
+        m_character->MoveForward(-m_characterSpeed * deltaTime);
+        moved = true;
+    }
+    if (IsKeyDown('A'))
+    {
+        m_character->MoveRight(-m_characterSpeed * deltaTime);
+        moved = true;
+    }
+    if (IsKeyDown('D'))
+    {
+        m_character->MoveRight(m_characterSpeed * deltaTime);
+        moved = true;
+    }
+
+    // QE 회전
+    if (IsKeyDown('Q'))
+    {
+        m_character->Turn(-90.0f * deltaTime);
+    }
+    if (IsKeyDown('E'))
+    {
+        m_character->Turn(90.0f * deltaTime);
+    }
+
+    // 달리기
+    if (IsKeyDown(VK_SHIFT))
+    {
+        m_character->SetMovementSpeed(m_characterSpeed * 2.0f);
+    }
+    else if (IsKeyUp(VK_SHIFT))
+    {
+        m_character->SetMovementSpeed(m_characterSpeed);
+    }
+
+    // 캐릭터 상태 업데이트
+    if (moved)
+    {
+        CharacterState newState = IsKeyDown(VK_SHIFT) ? CharacterState::Running : CharacterState::Walking;
+        m_character->SetState(newState);
+    }
+    else
+    {
+        m_character->SetState(CharacterState::Idle);
+    }
+}
+
+void InputManager::ProcessMouseInput()
+{
+    // 마우스 입력은 OnMouseMove에서 처리
+}
+
+} // namespace visualnnz

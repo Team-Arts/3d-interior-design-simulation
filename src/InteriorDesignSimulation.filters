@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{0587d7a3-f2ce-4d56-b84f-a0005d3bfce6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources">
+      <UniqueIdentifier>{08e36723-ce4f-4cff-9662-c40801cf1acf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\backends\imgui_impl_win32.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\backends\imgui_impl_dx11.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\..\..\..\..\DirectX11_Project\WindowsProject2\WindowsProject2\stb_image_write.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\..\..\..\..\DirectX11_Project\WindowsProject2\WindowsProject2\targetver.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\..\..\..\..\DirectX11_Project\WindowsProject2\WindowsProject2\framework.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\..\..\..\..\DirectX11_Project\WindowsProject2\WindowsProject2\json.hpp">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\..\..\..\..\DirectX11_Project\WindowsProject2\WindowsProject2\stb_image.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelManager.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\..\..\..\Downloads\WICTextureLoader11.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomModel.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="GltfLoader.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="tiny_gltf.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="EnhancedUI.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="LightManager.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="DummyCharacter.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraModeManager.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backends\imgui_impl_win32.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\backends\imgui_impl_dx11.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelManager.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\..\..\Downloads\WICTextureLoader.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="RoomModel.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="GltfLoader.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="EnhancedUI.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="LightManager.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="DummyCharacter.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.txt" />
+    <None Include="..\..\misc\debuggers\imgui.natvis">
+      <Filter>imgui</Filter>
+    </None>
+    <None Include="..\..\misc\debuggers\imgui.natstepfilter">
+      <Filter>imgui</Filter>
+    </None>
+    <None Include="packages.config" />
+    <None Include="desk.glb">
+      <Filter>imgui</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,137 @@
+﻿#pragma once
+
+#include <string>
+#include <vector>
+#include <functional>
+#include <memory>
+#include <d3d11.h>
+#include <wrl.h>
+#include <map>
+
+// ImGui 헤더
+#include <imgui.h>
+#include <imgui_impl_win32.h>
+#include <imgui_impl_dx11.h>
+
+namespace visualnnz
+{
+using Microsoft::WRL::ComPtr;
+using std::string;
+using std::vector;
+using std::function;
+using std::shared_ptr;
+using std::map;
+
+class InteriorObject;
+class ModelLoader;
+class Character;
+
+enum class ObjectCategory
+{
+    Furniture,
+    Space,
+    Character,
+    Lighting,
+    Decoration
+};
+
+struct ObjectItem
+{
+    string name;
+    string modelPath;
+    ObjectCategory category;
+    string thumbnailPath;
+    string description;
+};
+
+class UIManager
+{
+public:
+    UIManager();
+    ~UIManager();
+
+    bool Initialize(HWND hWnd, ComPtr<ID3D11Device> device, ComPtr<ID3D11DeviceContext> context);
+    void Shutdown();
+
+    // 매 프레임 UI 업데이트
+    void BeginFrame();
+    void Render();
+    void EndFrame();
+
+    // UI 이벤트 콜백 설정
+    void SetOnModelSpawnCallback(function<void(const string&)> callback) 
+    { 
+        m_onModelSpawn = callback; 
+    }
+    
+    void SetOnObjectDeleteCallback(function<void(shared_ptr<InteriorObject>)> callback) 
+    { 
+        m_onObjectDelete = callback; 
+    }
+
+    void SetOnCharacterSpawnCallback(function<void(const string&)> callback)
+    {
+        m_onCharacterSpawn = callback;
+    }
+
+    // 현재 오브젝트 목록 업데이트
+    void UpdateObjectList(const vector<shared_ptr<InteriorObject>>& objects);
+    
+    // 선택된 오브젝트 설정
+    void SetSelectedObject(shared_ptr<InteriorObject> object);
+
+    // 캐릭터 관련
+    void SetCharacter(shared_ptr<Character> character) { m_character = character; }
+
+private:
+    void RenderMainMenuBar();
+    void RenderCategoryPanel();
+    void RenderObjectBrowser();
+    void RenderBottomObjectList();
+    void RenderSceneHierarchy();
+    void RenderInspector();
+    void RenderCharacterPanel();
+    void RenderStatusWindow();
+
+    // 카테고리 관련
+    void InitializeObjectItems();
+    void RenderCategoryButton(ObjectCategory category, const string& name, const string& koreanName);
+    void RenderObjectItem(const ObjectItem& item, float itemWidth);
+
+    // UI 상태
+    bool m_showObjectBrowser = false;  // 기존 브라우저는 숨김
+    bool m_showSceneHierarchy = true;
+    bool m_showInspector = true;
+    bool m_showDemo = false;
+    bool m_showCategoryPanel = true;
+    bool m_showBottomObjectList = true;
+    bool m_showCharacterPanel = true;
+    bool m_showStatusWindow = false; // 상태 창 표시 추가
+    bool m_showObjectProperties = false; // 오브젝트 속성 표시 추가
+
+    ObjectCategory m_selectedCategory = ObjectCategory::Furniture;
+
+    // 데이터
+    vector<string> m_availableModels;
+    vector<shared_ptr<InteriorObject>> m_sceneObjects;
+    shared_ptr<InteriorObject> m_selectedObject;
+    shared_ptr<Character> m_character;
+
+    // 오브젝트 아이템 데이터
+    map<ObjectCategory, vector<ObjectItem>> m_objectItems;
+
+    // 콜백 함수들
+    function<void(const string&)> m_onModelSpawn;
+    function<void(shared_ptr<InteriorObject>)> m_onObjectDelete;
+    function<void(const string&)> m_onCharacterSpawn;
+
+    // ModelLoader 참조
+    shared_ptr<ModelLoader> m_modelLoader;
+
+    // UI 레이아웃 상수
+    static constexpr float CATEGORY_PANEL_WIDTH = 250.0f;
+    static constexpr float BOTTOM_PANEL_HEIGHT = 150.0f;
+    static constexpr float OBJECT_ITEM_SIZE = 80.0f;
+};
+
+} // namespace visualnnz

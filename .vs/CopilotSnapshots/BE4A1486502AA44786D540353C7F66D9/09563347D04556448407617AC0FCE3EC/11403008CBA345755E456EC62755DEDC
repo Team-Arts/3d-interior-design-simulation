@@ -1,0 +1,229 @@
+﻿#include "Character.h"
+#include "../Components/Transform.h"
+#include "../Components/MeshRenderer.h"
+#include "../Character/Camera.h"
+#include <iostream>
+#include <algorithm>
+
+namespace visualnnz
+{
+using namespace std;
+using namespace DirectX::SimpleMath;
+
+Character::Character()
+    : m_currentState(CharacterState::Idle)
+    , m_movementSpeed(3.0f)
+    , m_rotationSpeed(180.0f) // degrees per second
+    , m_collisionRadius(0.5f)
+    , m_animationTime(0.0f)
+    , m_walkCycleSpeed(2.0f)
+{
+    m_transform = make_unique<Transform>();
+    
+    cout << "Character constructor completed" << endl;
+}
+
+Character::~Character()
+{
+    cout << "Character destructor called" << endl;
+}
+
+bool Character::Initialize(ComPtr<ID3D11Device> device, const string& modelPath)
+{
+    cout << "Character::Initialize starting..." << endl;
+
+    if (!m_transform)
+    {
+        cout << "Transform not initialized!" << endl;
+        return false;
+    }
+
+    // 기본 위치 설정 (바닥에서 살짝 위)
+    m_transform->SetPosition(Vector3(0.0f, 0.1f, 0.0f));
+    m_transform->SetScale(Vector3(1.0f, 1.0f, 1.0f));
+
+    // MeshRenderer 초기화 (모델이 있는 경우)
+    if (!modelPath.empty())
+    {
+        m_meshRenderer = make_unique<MeshRenderer>();
+        if (!m_meshRenderer->Initialize(device))
+        {
+            cout << "Failed to initialize character MeshRenderer!" << endl;
+            return false;
+        }
+        // 실제 모델 로딩은 ModelLoader를 통해 처리
+    }
+
+    cout << "Character initialized successfully!" << endl;
+    return true;
+}
+
+void Character::Update(float deltaTime)
+{
+    UpdateMovement(deltaTime);
+    UpdateAnimation(deltaTime);
+    
+    if (m_transform)
+    {
+        m_transform->Update(deltaTime);
+    }
+}
+
+void Character::Render(ComPtr<ID3D11DeviceContext> context, const Camera& camera)
+{
+    if (m_meshRenderer && m_transform)
+    {
+        m_meshRenderer->Render(context, camera, m_transform->GetWorldMatrix());
+    }
+}
+
+void Character::SetPosition(const Vector3& position)
+{
+    if (m_transform)
+    {
+        m_transform->SetPosition(position);
+    }
+}
+
+Vector3 Character::GetPosition() const
+{
+    if (m_transform)
+    {
+        return m_transform->GetPosition();
+    }
+    return Vector3::Zero;
+}
+
+void Character::SetRotation(const Vector3& rotation)
+{
+    if (m_transform)
+    {
+        m_transform->SetRotation(rotation);
+    }
+}
+
+Vector3 Character::GetRotation() const
+{
+    if (m_transform)
+    {
+        return m_transform->GetRotation();
+    }
+    return Vector3::Zero;
+}
+
+void Character::MoveForward(float distance)
+{
+    if (!m_transform) return;
+
+    Vector3 currentRotation = m_transform->GetRotation();
+    float yawRadians = currentRotation.y * (3.14159f / 180.0f);
+    
+    Vector3 forward = Vector3(sin(yawRadians), 0.0f, cos(yawRadians));
+    Vector3 currentPos = m_transform->GetPosition();
+    
+    m_transform->SetPosition(currentPos + forward * distance);
+    
+    // 움직이는 동안 상태 변경
+    if (abs(distance) > 0.001f)
+    {
+        SetState(CharacterState::Walking);
+    }
+}
+
+void Character::MoveRight(float distance)
+{
+    if (!m_transform) return;
+
+    Vector3 currentRotation = m_transform->GetRotation();
+    float yawRadians = currentRotation.y * (3.14159f / 180.0f);
+    
+    Vector3 right = Vector3(cos(yawRadians), 0.0f, -sin(yawRadians));
+    Vector3 currentPos = m_transform->GetPosition();
+    
+    m_transform->SetPosition(currentPos + right * distance);
+    
+    // 움직이는 동안 상태 변경
+    if (abs(distance) > 0.001f)
+    {
+        SetState(CharacterState::Walking);
+    }
+}
+
+void Character::Turn(float angle)
+{
+    if (!m_transform) return;
+
+    Vector3 currentRotation = m_transform->GetRotation();
+    currentRotation.y += angle;
+    
+    // Y축 회전을 0-360도 범위로 정규화
+    while (currentRotation.y >= 360.0f) currentRotation.y -= 360.0f;
+    while (currentRotation.y < 0.0f) currentRotation.y += 360.0f;
+    
+    m_transform->SetRotation(currentRotation);
+}
+
+void Character::SetState(CharacterState state)
+{
+    if (m_currentState != state)
+    {
+        CharacterState oldState = m_currentState;
+        m_currentState = state;
+        
+        cout << "Character state changed from " << (int)oldState << " to " << (int)state << endl;
+        
+        // 상태 변경 시 애니메이션 시간 리셋
+        m_animationTime = 0.0f;
+    }
+}
+
+CharacterState Character::GetState() const
+{
+    return m_currentState;
+}
+
+void Character::UpdateMovement(float deltaTime)
+{
+    // 움직임이 없으면 Idle 상태로 복귀
+    static float idleTimer = 0.0f;
+    
+    if (m_currentState == CharacterState::Walking)
+    {
+        idleTimer += deltaTime;
+        if (idleTimer > 0.1f) // 0.1초 후 자동으로 Idle로 변경
+        {
+            SetState(CharacterState::Idle);
+            idleTimer = 0.0f;
+        }
+    }
+    else
+    {
+        idleTimer = 0.0f;
+    }
+}
+
+void Character::UpdateAnimation(float deltaTime)
+{
+    m_animationTime += deltaTime;
+    
+    switch (m_currentState)
+    {
+        case CharacterState::Idle:
+            // Idle 애니메이션 (천천히 상하 움직임)
+            break;
+            
+        case CharacterState::Walking:
+            // Walking 애니메이션
+            break;
+            
+        case CharacterState::Running:
+            // Running 애니메이션
+            break;
+            
+        case CharacterState::Interacting:
+            // Interaction 애니메이션
+            break;
+    }
+}
+
+} // namespace visualnnz
