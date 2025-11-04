@@ -633,7 +633,8 @@ bool ModelManager::OpenTextureFileDialog(HWND hwnd, std::string &filePath)
     ofn.hwndOwner = hwnd;
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile);
-    ofn.lpstrFilter = "텍스처 파일\0*.jpg;*.png;*.bmp;*.dds\0모든 파일\0*.*\0";
+    // 필터 문자열을 영어로 변경 (가장 안전한 방법)
+    ofn.lpstrFilter = "Texture Files\0*.jpg;*.png;*.bmp;*.dds\0All Files\0*.*\0";
     ofn.nFilterIndex = 1;
     ofn.lpstrFileTitle = NULL;
     ofn.nMaxFileTitle = 0;
@@ -1282,7 +1283,7 @@ bool ModelManager::OpenObjFileDialog(HWND hwnd, std::string &filePath)
     ofn.hwndOwner = hwnd;
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile);
-    ofn.lpstrFilter = "OBJ 파일\0*.obj\0모든 파일\0*.*\0";
+    ofn.lpstrFilter = "OBJ Files\0*.obj\0All Files\0*.*\0";
     ofn.nFilterIndex = 1;
     ofn.lpstrFileTitle = NULL;
     ofn.nMaxFileTitle = 0;
@@ -1307,7 +1308,7 @@ bool ModelManager::OpenGlbFileDialog(HWND hwnd, std::string &filePath)
     ofn.hwndOwner = hwnd;
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile);
-    ofn.lpstrFilter = "GLB/GLTF 파일\0*.glb;*.gltf\0모든 파일\0*.*\0";
+    ofn.lpstrFilter = "GLB/GLTF Files\0*.glb;*.gltf\0All Files\0*.*\0";
     ofn.nFilterIndex = 1;
     ofn.lpstrFileTitle = NULL;
     ofn.nMaxFileTitle = 0;
@@ -1322,7 +1323,8 @@ bool ModelManager::OpenGlbFileDialog(HWND hwnd, std::string &filePath)
     return false;
 }
 
-bool ModelManager::OpenSaveFileDialog(HWND hwnd, std::string& filePath) {
+bool ModelManager::OpenSaveFileDialog(HWND hwnd, std::string& filePath)
+{
     OPENFILENAMEA ofn;
     char szFile[260] = {0};
 
@@ -1331,7 +1333,7 @@ bool ModelManager::OpenSaveFileDialog(HWND hwnd, std::string& filePath) {
     ofn.hwndOwner = hwnd;
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile);
-    ofn.lpstrFilter = "인테리어 설계 파일\0*.interior\0JSON 파일\0*.json\0모든 파일\0*.*\0";
+    ofn.lpstrFilter = "Interior Design Files\0*.interior\0JSON Files\0*.json\0All Files\0*.*\0";
     ofn.nFilterIndex = 1;
     ofn.lpstrFileTitle = NULL;
     ofn.nMaxFileTitle = 0;
@@ -1339,14 +1341,16 @@ bool ModelManager::OpenSaveFileDialog(HWND hwnd, std::string& filePath) {
     ofn.lpstrDefExt = "interior";
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
 
-    if (GetSaveFileNameA(&ofn) == TRUE) {
+    if (GetSaveFileNameA(&ofn) == TRUE)
+    {
         filePath = ofn.lpstrFile;
         return true;
     }
     return false;
 }
 
-bool ModelManager::OpenLoadFileDialog(HWND hwnd, std::string& filePath) {
+bool ModelManager::OpenLoadFileDialog(HWND hwnd, std::string& filePath)
+{
     OPENFILENAMEA ofn;
     char szFile[260] = {0};
 
@@ -1355,14 +1359,15 @@ bool ModelManager::OpenLoadFileDialog(HWND hwnd, std::string& filePath) {
     ofn.hwndOwner = hwnd;
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile);
-    ofn.lpstrFilter = "인테리어 설계 파일\0*.interior\0JSON 파일\0*.json\0모든 파일\0*.*\0";
+    ofn.lpstrFilter = "Interior Design Files\0*.interior\0JSON Files\0*.json\0All Files\0*.*\0";
     ofn.nFilterIndex = 1;
     ofn.lpstrFileTitle = NULL;
     ofn.nMaxFileTitle = 0;
     ofn.lpstrInitialDir = NULL;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
-    if (GetOpenFileNameA(&ofn) == TRUE) {
+    if (GetOpenFileNameA(&ofn) == TRUE)
+    {
         filePath = ofn.lpstrFile;
         return true;
     }

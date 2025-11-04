@@ -244,7 +244,7 @@ void InitImGui(HWND hwnd)
     ImGui_ImplDX11_CreateDeviceObjects();
 }
 
-int main(int, char**)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     // 윈도우 생성
     WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"DirectX 3D Viewer", nullptr };
