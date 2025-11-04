@@ -1,5 +1,5 @@
 #include "LightManager.h"
-#include "imgui.h"
+#include <imgui.h>
 #include "EnhancedUI.h"
 
 LightManager::LightManager() : lightConstantBuffer(nullptr) {

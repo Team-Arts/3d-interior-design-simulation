@@ -1,0 +1,75 @@
+{
+    "camera": {
+        "farPlane": 1000.0,
+        "fieldOfView": 0.7853981852531433,
+        "mode": 0,
+        "nearPlane": 0.10000000149011612,
+        "position": [
+            8.462512016296387,
+            7.564948081970215,
+            -29.527536392211914
+        ],
+        "rotation": [
+            21.90000343322754,
+            -8.90002155303955,
+            0.0
+        ]
+    },
+    "createdAt": "2025-11-04 20:23:42",
+    "description": "",
+    "lights": [],
+    "models": [
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\office_desk1.glb",
+            "name": "office_desk1.glb",
+            "position": [
+                7.0,
+                -3.0,
+                -1.3300000429153442
+            ],
+            "rotation": [
+                14.0,
+                -44.0,
+                0.0
+            ],
+            "scale": [
+                2.2066667079925537,
+                2.2066667079925537,
+                2.2066667079925537
+            ],
+            "type": "GLB",
+            "visible": true
+        }
+    ],
+    "room": {
+        "ceilingColor": [
+            0.949999988079071,
+            0.949999988079071,
+            0.949999988079071,
+            1.0
+        ],
+        "depth": 29.40999984741211,
+        "floorColor": [
+            0.5,
+            0.5,
+            0.5,
+            1.0
+        ],
+        "hasWindow": false,
+        "height": 10.0,
+        "wallColor": [
+            0.9279999732971191,
+            0.7559999823570251,
+            0.8069999814033508,
+            1.0
+        ],
+        "width": 28.139999389648438,
+        "windowColor": [
+            0.6000000238418579,
+            0.800000011920929,
+            1.0,
+            0.5
+        ]
+    },
+    "version": "1.0"
+}

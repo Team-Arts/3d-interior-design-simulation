@@ -1,0 +1,117 @@
+{
+    "camera": {
+        "farPlane": 1000.0,
+        "fieldOfView": 0.7853981852531433,
+        "mode": 0,
+        "nearPlane": 0.10000000149011612,
+        "position": [
+            18.791759490966797,
+            11.496475219726563,
+            -29.56495475769043
+        ],
+        "rotation": [
+            20.900007247924805,
+            -26.000019073486328,
+            0.0
+        ]
+    },
+    "createdAt": "2025-11-04 19:42:21",
+    "description": "",
+    "lights": [],
+    "models": [
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\1_office_chair.glb",
+            "name": "1_office_chair.glb",
+            "position": [
+                -6.559999942779541,
+                -3.5799999237060547,
+                3.0999999046325684
+            ],
+            "rotation": [
+                0.0,
+                40.0,
+                0.0
+            ],
+            "scale": [
+                2.6533334255218506,
+                2.6533334255218506,
+                2.6533334255218506
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\2_computer_desk.glb",
+            "name": "2_computer_desk.glb",
+            "position": [
+                -0.0,
+                -5.0,
+                -5.659999847412109
+            ],
+            "rotation": [
+                0.0,
+                -128.0,
+                0.0
+            ],
+            "scale": [
+                2.25,
+                2.25,
+                2.25
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\sofa.glb",
+            "name": "sofa.glb",
+            "position": [
+                6.440000057220459,
+                -5.119999885559082,
+                -0.00017452239990234375
+            ],
+            "rotation": [
+                -4.0,
+                -116.0,
+                0.0
+            ],
+            "scale": [
+                2.1766669750213623,
+                2.1766669750213623,
+                2.1766669750213623
+            ],
+            "type": "GLB",
+            "visible": true
+        }
+    ],
+    "room": {
+        "ceilingColor": [
+            0.949999988079071,
+            0.949999988079071,
+            0.949999988079071,
+            1.0
+        ],
+        "depth": 29.40999984741211,
+        "floorColor": [
+            0.5,
+            0.5,
+            0.5,
+            1.0
+        ],
+        "hasWindow": false,
+        "height": 10.0,
+        "wallColor": [
+            0.9279999732971191,
+            0.7559999823570251,
+            0.8069999814033508,
+            1.0
+        ],
+        "width": 28.139999389648438,
+        "windowColor": [
+            0.6000000238418579,
+            0.800000011920929,
+            1.0,
+            0.5
+        ]
+    },
+    "version": "1.0"
+}

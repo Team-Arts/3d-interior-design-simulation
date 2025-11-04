@@ -1,39 +1,44 @@
 #pragma once
-#include "Model.h"
-#include "LightManager.h"
-#include "GltfLoader.h"  // GLB 로더 헤더 포함
-#include "DummyCharacter.h"  // 추가
-#include "Common.h"
-#include "EnhancedUI.h"
-#include "RoomModel.h"
 #include "Camera.h"
-#include <vector>
-#include <memory>
-#include <string>
-#include <d3d11.h>
-#include <windows.h>
-#include <thread>
-#include <mutex>
+#include "Common.h"
+#include "DummyCharacter.h" // 추가
+#include "EnhancedUI.h"
+#include "GltfLoader.h" // GLB 로더 헤더 포함
+#include "LightManager.h"
+#include "Model.h"
+#include "RoomModel.h"
 #include <atomic>
 #include <condition_variable>
-#include <queue>
+#include <d3d11.h>
 #include <future>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <string>
+#include <thread>
+#include <vector>
+#include <windows.h>
 
-// 모델 타입 enum 
-enum ModelType {
+// 전방 선언
+class InteriorStateManager;
+
+// 모델 타입 enum
+enum ModelType
+{
     MODEL_OBJ,
     MODEL_GLB
 };
 
 // 레이 정의 구조체 (레이캐스팅용)
-struct Ray {
+struct Ray
+{
     XMFLOAT3 origin;
     XMFLOAT3 direction;
 };
 
-
 // 로딩 진행 상태를 표시하기 위한 구조체
-struct LoadingProgress {
+struct LoadingProgress
+{
     std::string filename;
     float progress;
     bool isComplete;
@@ -42,47 +47,94 @@ struct LoadingProgress {
 };
 
 // 베이스 모델 인터페이스
-class BaseModel {
+class BaseModel
+{
 public:
     virtual ~BaseModel() = default;
-    virtual void Render(ID3D11DeviceContext* deviceContext, const Camera& camera) = 0;
+    virtual void Render(ID3D11DeviceContext *deviceContext, const Camera &camera) = 0;
     virtual void Release() = 0;
+
     virtual XMFLOAT3 GetPosition() const = 0;
-    virtual void SetPosition(const XMFLOAT3& position) = 0;
+    virtual XMFLOAT3 GetRotation() const = 0;
+    virtual XMFLOAT3 GetScale() const = 0;
+    virtual bool IsVisible() const = 0;
+
+    virtual void SetPosition(const XMFLOAT3 &position) = 0;
+    virtual void SetRotation(const XMFLOAT3 &rotation) = 0;
+    virtual void SetScale(const XMFLOAT3 &scale) = 0;
+    virtual void SetVisibility(bool visible) = 0;
+
     virtual BoundingBox GetBoundingBox() const = 0;
     // 추가 렌더링 함수 - 조명 관리자 지원
-    virtual void Render(ID3D11DeviceContext* deviceContext, const Camera& camera, LightManager* lightManager) {
+    virtual void Render(ID3D11DeviceContext *deviceContext, const Camera &camera, LightManager *lightManager)
+    {
         // 기본 구현은 일반 렌더링 호출
         Render(deviceContext, camera);
     }
 };
 
 // OBJ 모델 래퍼 클래스
-class ObjModelWrapper : public BaseModel {
+class ObjModelWrapper : public BaseModel
+{
 public:
     ObjModelWrapper() : model(std::make_shared<Model>()) {}
     ~ObjModelWrapper() override { model->Release(); }
 
-    void Render(ID3D11DeviceContext* deviceContext, const Camera& camera) override {
-        //조명없는 기본호출
+    void Render(ID3D11DeviceContext *deviceContext, const Camera &camera) override
+    {
+        // 조명없는 기본호출
         model->Render(deviceContext, camera, nullptr);
     }
 
     // 조명 관리자를 지원하는 확장 렌더링 함수
-    void Render(ID3D11DeviceContext* deviceContext, const Camera& camera, LightManager* lightManager) {
+    void Render(ID3D11DeviceContext *deviceContext, const Camera &camera, LightManager *lightManager)
+    {
         model->Render(deviceContext, camera, lightManager);
     }
     void Release() override { model->Release(); }
 
-    XMFLOAT3 GetPosition() const override {
+    XMFLOAT3 GetPosition() const override
+    {
         return model->GetModelInfo().Position;
     }
 
-    void SetPosition(const XMFLOAT3& position) override {
+    XMFLOAT3 GetRotation() const override
+    {
+        return model->GetModelInfo().Rotation;
+    }
+
+    XMFLOAT3 GetScale() const override
+    {
+        return model->GetModelInfo().Scale;
+    }
+
+    bool IsVisible() const
+    {
+        return model->GetModelInfo().Visible;
+    }
+
+    void SetPosition(const XMFLOAT3 &position) override
+    {
         model->GetModelInfo().Position = position;
     }
 
-    BoundingBox GetBoundingBox() const override {
+    void SetRotation(const XMFLOAT3 &rotation) override
+    {
+        model->GetModelInfo().Rotation = rotation;
+    }
+
+    void SetScale(const XMFLOAT3 &scale) override
+    {
+        model->GetModelInfo().Scale = scale;
+    }
+
+    void SetVisibility(bool visible) override
+    {
+        model->GetModelInfo().Visible = visible;
+    }
+
+    BoundingBox GetBoundingBox() const override
+    {
         // 모델의 바운딩 박스 계산 (실제 구현에서는 모델 데이터 기반으로 계산)
         BoundingBox box;
         XMFLOAT3 pos = model->GetModelInfo().Position;
@@ -92,14 +144,12 @@ public:
         box.min = XMFLOAT3(
             pos.x - size * scale.x,
             pos.y - size * scale.y,
-            pos.z - size * scale.z
-        );
+            pos.z - size * scale.z);
 
         box.max = XMFLOAT3(
             pos.x + size * scale.x,
             pos.y + size * scale.y,
-            pos.z + size * scale.z
-        );
+            pos.z + size * scale.z);
 
         box.center = pos;
         box.radius = size * max(max(scale.x, scale.y), scale.z);
@@ -111,40 +161,79 @@ public:
 };
 
 // GLB 모델 래퍼 클래스
-class GlbModelWrapper : public BaseModel {
+class GlbModelWrapper : public BaseModel
+{
 public:
     GlbModelWrapper() : model(std::make_shared<GltfLoader>()) {}
     ~GlbModelWrapper() override { model->Release(); }
 
-    void Render(ID3D11DeviceContext* deviceContext, const Camera& camera) override {
+    void Render(ID3D11DeviceContext *deviceContext, const Camera &camera) override
+    {
         model->Render(deviceContext, camera);
     }
 
     // 추가: 조명 지원 렌더링 함수 오버라이드
-    void Render(ID3D11DeviceContext* deviceContext, const Camera& camera, LightManager* lightManager) override {
-        if (model && lightManager) {
+    void Render(ID3D11DeviceContext *deviceContext, const Camera &camera, LightManager *lightManager) override
+    {
+        if (model && lightManager)
+        {
             // 조명 정보를 GLB 모델 렌더링에 전달
             model->Render(deviceContext, camera, lightManager);
         }
-        else {
+        else
+        {
             // 조명 관리자가 없으면 기본 렌더링 사용
             model->Render(deviceContext, camera);
         }
     }
     void Release() override { model->Release(); }
 
-    XMFLOAT3 GetPosition() const override {
+    XMFLOAT3 GetPosition() const override
+    {
         return model->GetModelInfo().Position;
     }
 
-    void SetPosition(const XMFLOAT3& position) override {
+    XMFLOAT3 GetRotation() const override
+    {
+        return model->GetModelInfo().Rotation;
+    }
+
+    XMFLOAT3 GetScale() const override
+    {
+        return model->GetModelInfo().Scale;
+    }
+
+    bool IsVisible() const
+    {
+        return model->GetModelInfo().Visible;
+    }
+
+    void SetPosition(const XMFLOAT3 &position) override
+    {
         model->GetModelInfo().Position = position;
 
         OutputDebugStringA(("GLB 모델 위치 설정: " + std::to_string(position.x) + "," +
-            std::to_string(position.y) + "," + std::to_string(position.z) + "\n").c_str());
+                            std::to_string(position.y) + "," + std::to_string(position.z) + "\n")
+                               .c_str());
     }
 
-    BoundingBox GetBoundingBox() const override {
+    void SetRotation(const XMFLOAT3 &rotation) override
+    {
+        model->GetModelInfo().Rotation = rotation;
+    }
+
+    void SetScale(const XMFLOAT3 &scale) override
+    {
+        model->GetModelInfo().Scale = scale;
+    }
+
+    void SetVisibility(bool visible) override
+    {
+        model->GetModelInfo().Visible = visible;
+    }
+
+    BoundingBox GetBoundingBox() const override
+    {
         // 모델의 바운딩 박스 계산 (실제 구현에서는 모델 데이터 기반으로 계산)
         BoundingBox box;
         XMFLOAT3 pos = model->GetModelInfo().Position;
@@ -154,14 +243,12 @@ public:
         box.min = XMFLOAT3(
             pos.x - size * scale.x,
             pos.y - size * scale.y,
-            pos.z - size * scale.z
-        );
+            pos.z - size * scale.z);
 
         box.max = XMFLOAT3(
             pos.x + size * scale.x,
             pos.y + size * scale.y,
-            pos.z + size * scale.z
-        );
+            pos.z + size * scale.z);
 
         box.center = pos;
         box.radius = size * max(max(scale.x, scale.y), scale.z);
@@ -178,30 +265,29 @@ public:
     // 생성자 및 소멸자
     ModelManager();
     ~ModelManager();
-    void ModelManager::DragSelectedModel(int x, int y, HWND hwnd);
+    void DragSelectedModel(int x, int y, HWND hwnd);
     // 모델 추가 함수들 - OBJ 및 GLB 지원
-    void AddModel(const std::string& path, ID3D11Device* device);
-    void AddModelAsync(const std::string& path);
+    void AddModel(const std::string &path, ID3D11Device *device);
+    void AddModelAsync(const std::string &path);
 
     // 특정 타입의 모델 추가 (OBJ/GLB)
-    void AddObjModel(const std::string& path, ID3D11Device* device);
-    void AddGlbModel(const std::string& path, ID3D11Device* device);
-    void AddObjModelAsync(const std::string& path);
-    void AddGlbModelAsync(const std::string& path);
+    void AddObjModel(const std::string &path, ID3D11Device *device);
+    void AddGlbModel(const std::string &path, ID3D11Device *device);
+    void AddObjModelAsync(const std::string &path);
+    void AddGlbModelAsync(const std::string &path);
 
-    //조명 관리자 관련 함수
-     void InitLightManager(ID3D11Device* device);
-    LightManager* GetLightManager() { return lightManager.get(); }
-
+    // 조명 관리자 관련 함수
+    void InitLightManager(ID3D11Device *device);
+    LightManager *GetLightManager() { return lightManager.get(); }
 
     // 모델 제거 함수
     void RemoveModel(int index);
 
     // 렌더링 함수
-    void RenderModels(ID3D11DeviceContext* deviceContext);
+    void RenderModels(ID3D11DeviceContext *deviceContext);
 
     // ImGui 렌더링 함수
-    void RenderImGuiWindow(HWND hwnd, ID3D11Device* device, float deltaTime);
+    void RenderImGuiWindow(HWND hwnd, ID3D11Device *device, float deltaTime);
 
     // 프레임 처리 함수
     void ProcessFrame(HWND hwnd, float deltaTime);
@@ -220,7 +306,7 @@ public:
     void RenderRoomProperties();
 
     // 향상된 UI 렌더링 함수들
-    void RenderEnhancedUI(HWND hwnd, ID3D11Device* device, float deltaTime);
+    void RenderEnhancedUI(HWND hwnd, ID3D11Device *device, float deltaTime);
     void RenderMainInterface(HWND hwnd);
     void RenderToolbar(HWND hwnd);
     void RenderModelBrowser();
@@ -232,7 +318,7 @@ public:
     void RenderGlbMaterialPropertiesEnhanced(std::shared_ptr<GltfLoader> model);
 
     // 카메라 가져오기
-    Camera& GetCamera() { return camera; }
+    Camera &GetCamera() { return camera; }
 
     // *** 새로 추가된 마우스 상호작용 관련 함수들 ***
     // 마우스 이벤트 처리
@@ -242,40 +328,74 @@ public:
 
     // 레이캐스팅 관련 함수들
     Ray CreateRayFromScreenPoint(int screenX, int screenY, int screenWidth, int screenHeight);
-    int PickModel(const Ray& ray);
-    bool RayIntersectsBoundingBox(const Ray& ray, const BoundingBox& box);
-    XMFLOAT3 GetPlaneIntersectionPoint(const Ray& ray, const XMFLOAT3& planeNormal, float planeD);
+    int PickModel(const Ray &ray);
+    bool RayIntersectsBoundingBox(const Ray &ray, const BoundingBox &box);
+    XMFLOAT3 GetPlaneIntersectionPoint(const Ray &ray, const XMFLOAT3 &planeNormal, float planeD);
     // 드래그 축 제한 enum
 
-    enum DragAxis { FREE, X_AXIS, Y_AXIS, Z_AXIS };
+    enum DragAxis
+    {
+        FREE,
+        X_AXIS,
+        Y_AXIS,
+        Z_AXIS
+    };
 
     // 드래그 축 제한 설정
     void SetDragAxis(DragAxis axis);
 
     // 드래그 평면 설정 함수
-    void SetupDragPlane(const Ray& ray);
+    void SetupDragPlane(const Ray &ray);
 
     // 드래그 도움말 및 상태 표시 함수
     void RenderDragHelpPopup();
     void RenderDragStatusInfo();
 
-
-    //카메라 모드 관련 1인칭 및 자유시점
+    // 카메라 모드 관련 1인칭 및 자유시점
     void ToggleCameraMode();
     bool IsFirstPersonMode() const { return isFirstPersonMode; }
     void ProcessCharacterInput(HWND hwnd, float deltaTime);
-    void InitializeDummyCharacter(ID3D11Device* device);
+    void InitializeDummyCharacter(ID3D11Device *device);
 
+    // 모델 정보 구조체
+    struct ModelInfo
+    {
+        std::shared_ptr<BaseModel> model;
+        ModelType type;
+        std::string name;
+        std::string path;
+    };
+
+    void ClearModels()
+    {
+        for (size_t i = 0; i < this->models.size(); ++i)
+        {
+            RemoveModel(static_cast<int>(i));
+        }
+        models.clear();
+    }
+
+    // Getter & Setter
+    std::vector<ModelInfo> GetModels() { return this->models; }
+
+    void SetModels(int index, const XMFLOAT3 &position, const XMFLOAT3 &rotation, 
+        const XMFLOAT3 &scale, bool visible)
+    {
+        models[index].model->SetPosition(position);
+        models[index].model->SetRotation(rotation);
+        models[index].model->SetScale(scale);
+        models[index].model->SetVisibility(visible);
+    }
 
 private:
-
-
-    float mouseSensitivity = 0.1f;  // 마우스 회전 민감도 추가
+    float mouseSensitivity = 0.1f; // 마우스 회전 민감도 추가
 
     // 파일 다이얼로그를 이용한 파일 선택
-    bool OpenObjFileDialog(HWND hwnd, std::string& filePath);
-    bool OpenGlbFileDialog(HWND hwnd, std::string& filePath);
-    bool OpenTextureFileDialog(HWND hwnd, std::string& filePath);
+    bool OpenObjFileDialog(HWND hwnd, std::string &filePath);
+    bool OpenGlbFileDialog(HWND hwnd, std::string &filePath);
+    bool OpenTextureFileDialog(HWND hwnd, std::string &filePath);
+    bool OpenSaveFileDialog(HWND hwnd, std::string &filePath);
+    bool OpenLoadFileDialog(HWND hwnd, std::string &filePath);
 
     // ImGui UI 렌더링 함수들
     void RenderModelProperties(int modelIndex);
@@ -284,7 +404,7 @@ private:
     void RenderLoadingProgress();
 
     // 모델 타입 결정 함수
-    ModelType GetModelTypeFromExtension(const std::string& filePath);
+    ModelType GetModelTypeFromExtension(const std::string &filePath);
 
     std::shared_ptr<RoomModel> roomModel = nullptr;
     // 카메라
@@ -295,16 +415,9 @@ private:
     std::shared_ptr<DummyCharacter> dummyCharacter;
     bool isFirstPersonMode;
 
-    // 모델 정보 구조체
-    struct ModelInfo {
-        std::shared_ptr<BaseModel> model;
-        ModelType type;
-        std::string name;
-        std::string path;
-    };
-
     // 모델 로딩 요청 구조체
-    struct LoadRequest {
+    struct LoadRequest
+    {
         std::string filePath;
         ModelType type;
         std::shared_ptr<LoadingProgress> progress;
@@ -314,14 +427,10 @@ private:
 
     // 비동기 로딩 스레드 함수들
     static bool LoadObjModelThreadFunction(
-        const std::string& path, ID3D11Device* device,
-        std::shared_ptr<Model> model,
-        std::shared_ptr<LoadingProgress> progress);
+        const std::string &path, ID3D11Device *device, std::shared_ptr<Model> model, std::shared_ptr<LoadingProgress> progress);
 
     static bool LoadGlbModelThreadFunction(
-        const std::string& path, ID3D11Device* device,
-        std::shared_ptr<GltfLoader> model,
-        std::shared_ptr<LoadingProgress> progress);
+        const std::string &path, ID3D11Device *device, std::shared_ptr<GltfLoader> model, std::shared_ptr<LoadingProgress> progress);
 
     // 모델 컬렉션
     std::vector<ModelInfo> models;
@@ -333,7 +442,7 @@ private:
     std::string selectedMaterialName;
 
     // 디바이스 참조
-    ID3D11Device* device = nullptr;
+    ID3D11Device *device = nullptr;
 
     // 로딩 요청 목록
     std::vector<LoadRequest> loadRequests;
@@ -343,7 +452,7 @@ private:
     std::vector<std::shared_ptr<LoadingProgress>> loadingProgresses;
     std::mutex progressMutex;
 
-    // 로딩 완료 대기 시간 (밀리초)
+    // 로딩 완료 대기 시간(ms)
     const int loadingCompleteDisplayTime = 3000;
 
     // *** 새로 추가된 변수들 ***
@@ -354,10 +463,11 @@ private:
     XMFLOAT3 dragStartIntersectPos;
     XMFLOAT3 currentIntersectPos;
     XMFLOAT3 dragPlaneNormal; // 드래그 이동 평면의 법선
-    float dragPlaneD; // 드래그 평면의 D 값 (평면 방정식: ax + by + cz + d = 0)
+    float dragPlaneD;         // 드래그 평면의 D 값 (평면 방정식: ax + by + cz + d = 0)
     DragAxis dragAxis = FREE;
 
-    // 조명 관리자 추가
+    // 모듈 관리자
     std::shared_ptr<LightManager> lightManager;
+    std::unique_ptr<InteriorStateManager> stateManager;
 
 };

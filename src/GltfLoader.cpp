@@ -1285,7 +1285,8 @@ void GltfLoader::RenderNode(ID3D11DeviceContext* deviceContext, const Camera& ca
     float scaleY = scaleFloat.y;
     float scaleZ = scaleFloat.z;
 
-    XMStoreFloat3(&XMFLOAT3(scaleX, scaleY, scaleZ), scale);
+    // 기존 코드에서 잘못된 부분:
+    //XMStoreFloat3(XMFLOAT3(scaleX, scaleY, scaleZ), scale);
 
     // 스케일이 비정상적으로 큰 경우 고정
     const float MAX_SCALE = 100.0f;

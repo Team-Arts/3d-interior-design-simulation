@@ -154,7 +154,7 @@ public:
     void Release();
 
 private:
-    void GltfLoader::AutoResizeModel();
+    void AutoResizeModel();
     BoundingBox CalculateBoundingBox() const;
 
     // 노드 렌더링 함수

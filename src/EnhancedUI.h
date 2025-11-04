@@ -1,6 +1,6 @@
 #pragma once
-#include "imgui.h"
-#include "imgui_internal.h"
+#include <imgui.h>
+#include <imgui_internal.h>
 #include <string>
 
 // 향상된 ImGui UI 스타일 및 레이아웃을 위한 헬퍼 클래스

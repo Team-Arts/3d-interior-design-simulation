@@ -1,6 +1,0 @@
-C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\bin\x64\Debug\assimp-vc143-mtd.dll
-C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\bin\x64\Debug\poly2tri.dll
-C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\bin\x64\Debug\minizip.dll
-C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\bin\x64\Debug\zlibd1.dll
-C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\bin\x64\Debug\pugixml.dll
-C:\Users\visualnnz\Desktop\Projects\3D_Interior_Design_Simulation\3d-interior-design-simulation\build\Interior.5086f9be\x64\Debug\Interior.1F7A3B73.Up2Date

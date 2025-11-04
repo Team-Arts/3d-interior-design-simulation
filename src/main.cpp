@@ -7,7 +7,7 @@
 #include <vector>
 #include <string> 
 #include <sstream>
-#include "imgui.h"
+#include <imgui.h>
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 #include "Model.h"
@@ -250,7 +250,7 @@ int main(int, char**)
     WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"DirectX 3D Viewer", nullptr };
     RegisterClassEx(&wc);
 
-    HWND hwnd = CreateWindow(wc.lpszClassName, L"3D 모델 뷰어 (OBJ 및 GLB)", WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800, nullptr, nullptr, wc.hInstance, nullptr);
+    HWND hwnd = CreateWindow(wc.lpszClassName, L"3D Interior Design Simulation", WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800, nullptr, nullptr, wc.hInstance, nullptr);
 
     // 모델 관리자 생성
     //ModelManager modelManager;

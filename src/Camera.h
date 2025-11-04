@@ -1,6 +1,6 @@
 #pragma once
-#include <directxmath.h>
 #include <d3d11.h>
+#include <directxmath.h>
 #include <windows.h>
 
 // 전방 선언(forward declaration)
@@ -8,19 +8,24 @@ class DummyCharacter;
 
 using namespace DirectX;
 
-enum CameraMode {
+enum CameraMode
+{
     FREE_CAMERA,
     FIRST_PERSON
 };
 
-class Camera {
+class Camera
+{
 public:
     Camera();
-    ~Camera() = default; 
+    ~Camera() = default;
 
     // 카메라 설정
     void SetPosition(float x, float y, float z);
     void SetRotation(float pitch, float yaw, float roll);
+    void SetFieldOfView(float fov);
+    void SetNearPlane(float nearZ);
+    void SetFarPlane(float farZ);
 
     // 카메라 이동
     void MoveForward(float distance);
@@ -31,6 +36,9 @@ public:
     // 카메라 속성 가져오기
     XMFLOAT3 GetPosition() const { return position; }
     XMFLOAT3 GetRotation() const { return rotation; }
+    float GetFieldOfView() const { return fieldOfView; }
+    float GetNearPlane() const { return nearPlane; }
+    float GetFarPlane() const { return farPlane; }
 
     // 뷰 및 투영 행렬 계산
     XMMATRIX GetViewMatrix() const;
@@ -42,6 +50,7 @@ public:
     // 마우스/키보드 입력 처리
     void ProcessInput(HWND hwnd, float deltaTime);
 
+
     // UI에서 카메라 속성 편집
     void RenderUI();
 
@@ -51,14 +60,14 @@ public:
     // 카메라 모드 관련
     void SetCameraMode(CameraMode newMode) { mode = newMode; }
     CameraMode GetCameraMode() const { return mode; }
-    void SetCharacter(DummyCharacter* character) { this->character = character; }
+    void SetCharacter(DummyCharacter *character) { this->character = character; }
 
     // UpdateFirstPersonView 함수 추가
     void UpdateFirstPersonView();
 
 private:
-    XMFLOAT3 position;     // 카메라 위치
-    XMFLOAT3 rotation;     // 카메라 회전 (피치, 요, 롤)
+    XMFLOAT3 position; // 카메라 위치
+    XMFLOAT3 rotation; // 카메라 회전 (피치, 요, 롤)
 
     // 투영 행렬 매개변수
     float fieldOfView;
@@ -71,10 +80,10 @@ private:
     bool mouseTracking;
 
     // 카메라 속도 설정
-    float moveSpeed;       // 초당 이동 속도
-    float rotateSpeed;     // 마우스 회전 민감도
+    float moveSpeed;   // 초당 이동 속도
+    float rotateSpeed; // 마우스 회전 민감도
 
     // 1인칭 모드 관련
     CameraMode mode;
-    DummyCharacter* character; // 캐릭터 참조
+    DummyCharacter *character; // 캐릭터 참조
 };

@@ -2,24 +2,23 @@
 #include "Camera.h"
 #include "DummyCharacter.h" // 여기에 포함
 #include "EnhancedUI.h"
-#include "imgui.h"
 #include <algorithm>
+#include <imgui.h>
 using namespace std;
-Camera::Camera() :
-    position(0.0f, 0.0f, -20.0f),
-    rotation(0.0f, 0.0f, 0.0f),
-    fieldOfView(XM_PIDIV4),
-    screenAspect(16.0f / 9.0f),
-    nearPlane(0.1f),
-    farPlane(1000.0f),
-    mouseTracking(false),
-    moveSpeed(10.0f),
-    rotateSpeed(0.1f),
-    mode(FREE_CAMERA),
-    character(nullptr)  // 초기화 추가
+Camera::Camera() : position(0.0f, 0.0f, -20.0f),
+                   rotation(0.0f, 0.0f, 0.0f),
+                   fieldOfView(XM_PIDIV4),
+                   screenAspect(16.0f / 9.0f),
+                   nearPlane(0.1f),
+                   farPlane(1000.0f),
+                   mouseTracking(false),
+                   moveSpeed(10.0f),
+                   rotateSpeed(0.1f),
+                   mode(FREE_CAMERA),
+                   character(nullptr) // 초기화 추가
 
 {
-    lastMousePos = { 0, 0 };
+    lastMousePos = {0, 0};
 }
 
 void Camera::SetPosition(float x, float y, float z)
@@ -33,6 +32,21 @@ void Camera::SetRotation(float pitch, float yaw, float roll)
     pitch = max(-89.0f, min(89.0f, pitch));
 
     rotation = XMFLOAT3(pitch, yaw, roll);
+}
+
+void Camera::SetFieldOfView(float fov)
+{
+    fieldOfView = fov;
+}
+
+void Camera::SetNearPlane(float nearZ)
+{
+    nearPlane = nearZ;
+}
+
+void Camera::SetFarPlane(float farZ)
+{
+    farPlane = farZ;
 }
 
 void Camera::MoveForward(float distance)
@@ -64,7 +78,7 @@ void Camera::Rotate(float pitchDelta, float yawDelta)
 {
     // 현재 회전 값 업데이트
     float newPitch = rotation.x + pitchDelta;
-    float newYaw = rotation.y + yawDelta; 
+    float newYaw = rotation.y + yawDelta;
 
     // 피치 각도 제한 (-89 ~ 89도)
     newPitch = max(-89.0f, min(89.0f, newPitch));
@@ -79,8 +93,7 @@ XMMATRIX Camera::GetViewMatrix() const
     XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(
         XMConvertToRadians(rotation.x),
         XMConvertToRadians(rotation.y),
-        XMConvertToRadians(rotation.z)
-    );
+        XMConvertToRadians(rotation.z));
 
     // 카메라 위치 벡터
     XMVECTOR positionVector = XMLoadFloat3(&position);
@@ -105,8 +118,7 @@ XMMATRIX Camera::GetProjectionMatrix() const
         fieldOfView,
         screenAspect,
         nearPlane,
-        farPlane
-    );
+        farPlane);
 }
 
 void Camera::SetProjection(float fov, float aspectRatio, float nearZ, float farZ)
@@ -124,41 +136,50 @@ void Camera::ProcessInput(HWND hwnd, float deltaTime)
     float currentSpeed = shiftPressed ? moveSpeed * 2.0f : moveSpeed;
     currentSpeed *= deltaTime; // 프레임 시간에 따른 이동 속도 조정
 
-    if (GetAsyncKeyState('W') & 0x8000) {
+    if (GetAsyncKeyState('W') & 0x8000)
+    {
         MoveForward(currentSpeed);
     }
 
-    if (GetAsyncKeyState('S') & 0x8000) {
+    if (GetAsyncKeyState('S') & 0x8000)
+    {
         MoveForward(-currentSpeed);
     }
 
-    if (GetAsyncKeyState('A') & 0x8000) {
+    if (GetAsyncKeyState('A') & 0x8000)
+    {
         MoveRight(-currentSpeed);
     }
 
-    if (GetAsyncKeyState('D') & 0x8000) {
+    if (GetAsyncKeyState('D') & 0x8000)
+    {
         MoveRight(currentSpeed);
     }
 
-    if (GetAsyncKeyState('Q') & 0x8000) {
+    if (GetAsyncKeyState('Q') & 0x8000)
+    {
         MoveUp(-currentSpeed);
     }
 
-    if (GetAsyncKeyState('E') & 0x8000) {
+    if (GetAsyncKeyState('E') & 0x8000)
+    {
         MoveUp(currentSpeed);
     }
 
     // 마우스 입력 처리
-    if (GetAsyncKeyState(VK_RBUTTON) & 0x8000) {
+    if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
+    {
         POINT currentMousePos;
         GetCursorPos(&currentMousePos);
         ScreenToClient(hwnd, &currentMousePos);
 
-        if (!mouseTracking) {
+        if (!mouseTracking)
+        {
             lastMousePos = currentMousePos;
             mouseTracking = true;
         }
-        else {
+        else
+        {
             float yawDelta = (currentMousePos.x - lastMousePos.x) * rotateSpeed;
             float pitchDelta = (currentMousePos.y - lastMousePos.y) * rotateSpeed;
 
@@ -166,14 +187,16 @@ void Camera::ProcessInput(HWND hwnd, float deltaTime)
             lastMousePos = currentMousePos;
         }
     }
-    else {
+    else
+    {
         mouseTracking = false;
     }
 }
 
 void Camera::RenderUI()
 {
-    if (ImGui::Begin("카메라 설정", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (ImGui::Begin("카메라 설정", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
         ImGui::Text("위치 (X, Y, Z):");
         bool posChanged = false;
         posChanged |= ImGui::SliderFloat("X##pos", &position.x, -50.0f, 50.0f);
@@ -186,11 +209,12 @@ void Camera::RenderUI()
         float yaw = rotation.y;
         float roll = rotation.z;
 
-        rotChanged |= ImGui::SliderFloat("피치", &pitch, -89.0f, 89.0f);
-        rotChanged |= ImGui::SliderFloat("요", &yaw, -180.0f, 180.0f);
-        rotChanged |= ImGui::SliderFloat("롤", &roll, -180.0f, 180.0f);
+        rotChanged |= ImGui::SliderFloat("Pitch", &pitch, -89.0f, 89.0f);
+        rotChanged |= ImGui::SliderFloat("Yaw", &yaw, -180.0f, 180.0f);
+        rotChanged |= ImGui::SliderFloat("Roll", &roll, -180.0f, 180.0f);
 
-        if (rotChanged) {
+        if (rotChanged)
+        {
             SetRotation(pitch, yaw, roll);
         }
 
@@ -203,9 +227,10 @@ void Camera::RenderUI()
 
         ImGui::Separator();
         ImGui::SliderFloat("이동 속도", &moveSpeed, 1.0f, 50.0f);
-        ImGui::SliderFloat("회전 민감도", &rotateSpeed, 0.01f, 1.0f);
+        ImGui::SliderFloat("Rotation Speed", &rotateSpeed, 0.01f, 1.0f);
 
-        if (ImGui::Button("초기 위치로 리셋")) {
+        if (ImGui::Button("초기 위치로 리셋"))
+        {
             SetPosition(0.0f, 0.0f, -20.0f);
             SetRotation(0.0f, 0.0f, 0.0f);
         }
@@ -230,7 +255,8 @@ void Camera::RenderEnhancedUI()
 
     ImGui::PopItemWidth();
 
-    if (positionChanged) {
+    if (positionChanged)
+    {
         SetPosition(pos.x, pos.y, pos.z);
     }
 
@@ -248,7 +274,8 @@ void Camera::RenderEnhancedUI()
 
     ImGui::PopItemWidth();
 
-    if (rotationChanged) {
+    if (rotationChanged)
+    {
         SetRotation(rot.x, rot.y, rot.z);
     }
 
@@ -262,35 +289,40 @@ void Camera::RenderEnhancedUI()
     ImGui::Spacing();
     ImGui::BeginGroup();
 
-    if (ImGui::Button("정면 뷰", ImVec2(80, 0))) {
+    if (ImGui::Button("정면 뷰", ImVec2(80, 0)))
+    {
         SetPosition(0.0f, 0.0f, -20.0f);
         SetRotation(0.0f, 0.0f, 0.0f);
     }
     ImGui::SameLine();
 
-    if (ImGui::Button("측면 뷰", ImVec2(80, 0))) {
+    if (ImGui::Button("옆면 뷰", ImVec2(80, 0)))
+    {
         SetPosition(20.0f, 0.0f, 0.0f);
         SetRotation(0.0f, -90.0f, 0.0f);
     }
     ImGui::SameLine();
 
-    if (ImGui::Button("위에서 뷰", ImVec2(80, 0))) {
-        SetPosition(0.0f, 20.0f, 0.0f);
-        SetRotation(-90.0f, 0.0f, 0.0f);
+    if (ImGui::Button("윗면 뷰", ImVec2(80, 0)))
+    {
+        SetPosition(0.0f, 40.0f, 0.0f);
+        SetRotation(90.0f, 0.0f, 0.0f);
     }
 
     ImGui::EndGroup();
 
-    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-        "키보드: WASD 이동, 화살표 회전, Q/E 상하 이동");
+    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "키보드: WASD 이동, 화살표 회전, Q/E 상하 이동");
 }
-void Camera::UpdateFirstPersonView() {
-    if (character == nullptr) {
+void Camera::UpdateFirstPersonView()
+{
+    if (character == nullptr)
+    {
         OutputDebugStringA("UpdateFirstPersonView: character is NULL\n");
         return;
     }
 
-    try {
+    try
+    {
         // 캐릭터 1인칭 시점 위치와 회전 가져오기
         XMFLOAT3 charPos = character->GetFirstPersonCameraPosition();
         XMFLOAT3 charRot = character->GetFirstPersonCameraRotation();
@@ -299,10 +331,12 @@ void Camera::UpdateFirstPersonView() {
         position = charPos;
         rotation = charRot;
     }
-    catch (std::exception& e) {
+    catch (std::exception &e)
+    {
         OutputDebugStringA(("UpdateFirstPersonView 예외: " + std::string(e.what()) + "\n").c_str());
     }
-    catch (...) {
+    catch (...)
+    {
         OutputDebugStringA("UpdateFirstPersonView: 알 수 없는 예외 발생\n");
     }
 }

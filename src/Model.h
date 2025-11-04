@@ -70,7 +70,7 @@ public:
     bool LoadTexture(const std::string& texturePath, ID3D11Device* device, ID3D11ShaderResourceView** textureView);
 
     // Model.h의 Render 함수 선언 수정
-    void Model::Render(ID3D11DeviceContext* deviceContext, const Camera& camera, LightManager* lightManager);
+    void Render(ID3D11DeviceContext* deviceContext, const Camera& camera, LightManager* lightManager);
 
     // 모델 정보 getter/setter
     ModelInfo& GetModelInfo() { return modelInfo; }

@@ -92,7 +92,7 @@ private:
     XMFLOAT4 ceilingColor = XMFLOAT4(0.95f, 0.95f, 0.95f, 1.0f); // 천장 색상
     XMFLOAT4 wallColor = XMFLOAT4(0.85f, 0.85f, 0.85f, 1.0f);    // 벽 색상
     XMFLOAT4 windowColor = XMFLOAT4(0.6f, 0.8f, 1.0f, 0.5f);     // 창문 색상
-    bool hasWindow = true;                                       // 창문 유무
+    bool hasWindow = false;                                       // 창문 유무
 
     // 디바이스 참조 저장
     ID3D11Device* device = nullptr;
