@@ -244,6 +244,8 @@ void InitImGui(HWND hwnd)
     ImGui_ImplDX11_CreateDeviceObjects();
 }
 
+// int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+// int main(int argc, char **argv) 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     // 윈도우 생성

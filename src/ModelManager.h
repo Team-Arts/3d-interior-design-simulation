@@ -238,7 +238,7 @@ public:
         BoundingBox box;
         XMFLOAT3 pos = model->GetModelInfo().Position;
         XMFLOAT3 scale = model->GetModelInfo().Scale;
-        float size = 5.0f; // 기본 크기 (실제 모델에 맞게 조정 필요)
+        float size = 1.0f; // 기본 크기 (실제 모델에 맞게 조정 필요)
 
         box.min = XMFLOAT3(
             pos.x - size * scale.x,
@@ -325,6 +325,7 @@ public:
     void OnMouseDown(int x, int y, HWND hwnd);
     void OnMouseMove(int x, int y, HWND hwnd);
     void OnMouseUp(int x, int y);
+    void OnMouseHover(int x, int y, HWND hwnd);
 
     // 레이캐스팅 관련 함수들
     Ray CreateRayFromScreenPoint(int screenX, int screenY, int screenWidth, int screenHeight);
@@ -348,7 +349,7 @@ public:
     void SetupDragPlane(const Ray &ray);
 
     // 드래그 도움말 및 상태 표시 함수
-    void RenderDragHelpPopup();
+    void RenderHelpPopup();
     void RenderDragStatusInfo();
 
     // 카메라 모드 관련 1인칭 및 자유시점
@@ -386,6 +387,13 @@ public:
         models[index].model->SetScale(scale);
         models[index].model->SetVisibility(visible);
     }
+
+    // Hover 관련 함수들 (이 부분을 추가)
+    void SetHoverAlpha(float alpha) { hoverAlpha = alpha; }
+    float GetHoverAlpha() const { return hoverAlpha; }
+    void SetHoverEnabled(bool enabled) { isHoverEnabled = enabled; }
+    bool IsHoverEnabled() const { return isHoverEnabled; }
+    int GetHoveredModelIndex() const { return hoveredModelIndex; }
 
 private:
     float mouseSensitivity = 0.1f; // 마우스 회전 민감도 추가
@@ -470,4 +478,8 @@ private:
     std::shared_ptr<LightManager> lightManager;
     std::unique_ptr<InteriorStateManager> stateManager;
 
+    // Hover 기능 관련 변수들
+    int hoveredModelIndex = -1; // 현재 hover된 모델 인덱스
+    bool isHoverEnabled = true; // hover 기능 활성화 여부
+    float hoverAlpha = 0.5f;    // hover 시 투명도 (0.0f ~ 1.0f, 낮을수록 더 투명)
 };

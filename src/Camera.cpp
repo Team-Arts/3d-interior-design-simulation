@@ -131,6 +131,14 @@ void Camera::SetProjection(float fov, float aspectRatio, float nearZ, float farZ
 
 void Camera::ProcessInput(HWND hwnd, float deltaTime)
 {
+    // 윈도우가 활성화된 상태인지 확인
+    if (GetActiveWindow() != hwnd && GetForegroundWindow() != hwnd)
+    {
+        // 윈도우가 비활성화된 상태이면 입력 처리하지 않음
+        mouseTracking = false; // 마우스 추적도 중단
+        return;
+    }
+
     // 키보드 입력 처리
     bool shiftPressed = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
     float currentSpeed = shiftPressed ? moveSpeed * 2.0f : moveSpeed;
@@ -158,12 +166,12 @@ void Camera::ProcessInput(HWND hwnd, float deltaTime)
 
     if (GetAsyncKeyState('Q') & 0x8000)
     {
-        MoveUp(-currentSpeed);
+        MoveUp(currentSpeed);
     }
 
     if (GetAsyncKeyState('E') & 0x8000)
     {
-        MoveUp(currentSpeed);
+        MoveUp(-currentSpeed);
     }
 
     // 마우스 입력 처리
@@ -311,7 +319,7 @@ void Camera::RenderEnhancedUI()
 
     ImGui::EndGroup();
 
-    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "키보드: WASD 이동, 화살표 회전, Q/E 상하 이동");
+    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "키보드: WASD 이동, QE 상하 이동");
 }
 void Camera::UpdateFirstPersonView()
 {

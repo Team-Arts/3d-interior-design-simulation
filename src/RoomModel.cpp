@@ -237,6 +237,19 @@ void RoomModel::UpdateRoom()
     // 버퍼 업데이트
     if (device) {
         UpdateBuffers(device);
+
+        // 라인 버퍼도 재생성
+        if (edgeVertexBuffer)
+        {
+            edgeVertexBuffer->Release();
+            edgeVertexBuffer = nullptr;
+        }
+        if (edgeIndexBuffer)
+        {
+            edgeIndexBuffer->Release();
+            edgeIndexBuffer = nullptr;
+        }
+        CreateEdgeBuffers(device); // 라인 버퍼 재생성
     }
 }
 
@@ -297,6 +310,8 @@ bool RoomModel::Initialize(ID3D11Device* device)
     blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
     device->CreateBlendState(&blendDesc, &blendState);
+
+    CreateEdgeBuffers(device);
     return true;
 }
 
@@ -310,7 +325,7 @@ void RoomModel::CreateRoom()
     float h = roomHeight / 2.0f;
     float d = roomDepth / 2.0f;
 
-    // 방의 8개 모서리 정의
+    // 방의 8개 꼭짓점 정의
     XMFLOAT3 p1(-w, -h, -d); // 바닥 사각형의 네 모서리
     XMFLOAT3 p2(w, -h, -d);
     XMFLOAT3 p3(w, -h, d);
@@ -589,6 +604,140 @@ bool RoomModel::CreateShaders(ID3D11Device* device)
     return true;
 }
 
+void RoomModel::CreateEdgeBuffers(ID3D11Device *device)
+{
+    // 방의 12개 모서리 라인을 정의 (8개 꼭지점, 12개 모서리)
+    float halfWidth = roomWidth / 2.0f;
+    float halfHeight = roomHeight / 2.0f;
+    float halfDepth = roomDepth / 2.0f;
+
+    // 8개의 꼭지점 정의
+    SimpleVertex edgeVertices[] = {
+        // 바닥 4개 꼭지점
+        {XMFLOAT3(-halfWidth, 0.0f, -halfDepth), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f)}, // 0
+        {XMFLOAT3(halfWidth, 0.0f, -halfDepth), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f)},  // 1
+        {XMFLOAT3(halfWidth, 0.0f, halfDepth), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f)},   // 2
+        {XMFLOAT3(-halfWidth, 0.0f, halfDepth), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f)},  // 3
+
+        // 천장 4개 꼭지점
+        {XMFLOAT3(-halfWidth, roomHeight, -halfDepth), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f)}, // 4
+        {XMFLOAT3(halfWidth, roomHeight, -halfDepth), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f)},  // 5
+        {XMFLOAT3(halfWidth, roomHeight, halfDepth), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f)},   // 6
+        {XMFLOAT3(-halfWidth, roomHeight, halfDepth), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f)}   // 7
+    };
+
+    // 12개 모서리를 나타내는 인덱스 (각 선은 2개의 정점)
+    DWORD edgeIndices[] = {
+        // 바닥 4개 모서리
+        0,
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        0,
+
+        // 천장 4개 모서리
+        4,
+        5,
+        5,
+        6,
+        6,
+        7,
+        7,
+        4,
+
+        // 수직 4개 모서리
+        0,
+        4,
+        1,
+        5,
+        2,
+        6,
+        3,
+        7};
+
+    edgeIndexCount = ARRAYSIZE(edgeIndices);
+
+    // 정점 버퍼 생성
+    D3D11_BUFFER_DESC vbd = {};
+    vbd.Usage = D3D11_USAGE_DEFAULT;
+    vbd.ByteWidth = sizeof(edgeVertices);
+    vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+    D3D11_SUBRESOURCE_DATA vertexData = {};
+    vertexData.pSysMem = edgeVertices;
+
+    HRESULT hr = device->CreateBuffer(&vbd, &vertexData, &edgeVertexBuffer);
+    if (FAILED(hr))
+    {
+        OutputDebugStringA("Failed to create edge vertex buffer\n");
+        return;
+    }
+
+    // 인덱스 버퍼 생성
+    D3D11_BUFFER_DESC ibd = {};
+    ibd.Usage = D3D11_USAGE_DEFAULT;
+    ibd.ByteWidth = sizeof(edgeIndices);
+    ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+    D3D11_SUBRESOURCE_DATA indexData = {};
+    indexData.pSysMem = edgeIndices;
+
+    hr = device->CreateBuffer(&ibd, &indexData, &edgeIndexBuffer);
+    if (FAILED(hr))
+    {
+        OutputDebugStringA("Failed to create edge index buffer\n");
+        return;
+    }
+}
+
+void RoomModel::RenderEdges(ID3D11DeviceContext *deviceContext, const Camera &camera)
+{
+    if (!showEdges || !edgeVertexBuffer || !edgeIndexBuffer)
+        return;
+
+    // 월드 행렬 설정
+    XMMATRIX world = XMMatrixIdentity();
+    XMMATRIX view = camera.GetViewMatrix();
+    XMMATRIX projection = camera.GetProjectionMatrix();
+
+    // 상수 버퍼 업데이트
+    ConstantBuffer cb;
+    cb.World = XMMatrixTranspose(world);
+    cb.View = XMMatrixTranspose(view);
+    cb.Projection = XMMatrixTranspose(projection);
+    cb.AmbientColor = edgeColor; // 라인 색상
+
+    deviceContext->UpdateSubresource(constantBuffer, 0, nullptr, &cb, 0, 0);
+
+    // 정점 버퍼 설정
+    UINT stride = sizeof(SimpleVertex);
+    UINT offset = 0;
+    deviceContext->IASetVertexBuffers(0, 1, &edgeVertexBuffer, &stride, &offset);
+    deviceContext->IASetIndexBuffer(edgeIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+    // 라인 리스트로 설정
+    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+
+    // 셰이더 설정
+    deviceContext->VSSetShader(vertexShader, nullptr, 0);
+    deviceContext->PSSetShader(pixelShader, nullptr, 0);
+    deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+    deviceContext->PSSetConstantBuffers(0, 1, &constantBuffer);
+
+    // 라인 두께 설정을 위한 래스터라이저 상태 (D3D11에서는 직접 지원하지 않음)
+    // 대신 기본 래스터라이저 상태 사용
+    deviceContext->RSSetState(rasterizerState);
+
+    // 라인 그리기
+    deviceContext->DrawIndexed(edgeIndexCount, 0, 0);
+
+    // 프리미티브 토폴로지를 다시 삼각형 리스트로 복원
+    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
 // RoomModel.cpp 수정 - Render 함수 수정
 void RoomModel::Render(ID3D11DeviceContext* deviceContext, const Camera& camera, LightManager* lightManager)
 {
@@ -632,10 +781,13 @@ void RoomModel::Render(ID3D11DeviceContext* deviceContext, const Camera& camera,
     // 그리기
     deviceContext->DrawIndexed(indexCount, 0, 0);
 
-    deviceContext->RSSetState(wireframeRasterizerState);
-    deviceContext->DrawIndexed(indexCount, 0, 0);
+    // wireframe 모드로 그리기 (디버그용)
+    // deviceContext->RSSetState(wireframeRasterizerState);
+    // deviceContext->DrawIndexed(indexCount, 0, 0);
     // (c) 이후 다른 모델을 위해 기본 상태 복원
     deviceContext->RSSetState(rasterizerState);
+
+    RenderEdges(deviceContext, camera);
 }
 
 void RoomModel::Release()
@@ -650,4 +802,17 @@ void RoomModel::Release()
     if (blendState) { blendState->Release(); blendState = nullptr; }
     wireframeRasterizerState->Release();
     wireframeRasterizerState = nullptr;
+
+    // 라인 버퍼 해제
+    if (edgeVertexBuffer)
+    {
+        edgeVertexBuffer->Release();
+        edgeVertexBuffer = nullptr;
+    }
+
+    if (edgeIndexBuffer)
+    {
+        edgeIndexBuffer->Release();
+        edgeIndexBuffer = nullptr;
+    }
 }

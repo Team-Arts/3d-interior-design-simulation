@@ -197,11 +197,17 @@ void DummyCharacter::CreateCharacterMesh() {
     indices.clear();
 
     // 실린더 설정
+    //const int segments = 16;
+    //const float topRadius = radius; // 상단 반경
+    //const float bottomRadius = radius; // 하단 반경
+    //const float topHeight = height; // 상단 높이
+    //const float bottomHeight = 0.0f; // 하단 높이
+
     const int segments = 16;
-    const float topRadius = radius; // 상단 반경
-    const float bottomRadius = radius; // 하단 반경
-    const float topHeight = height; // 상단 높이
-    const float bottomHeight = 0.0f; // 하단 높이
+    const float topRadius = 0.0f;    // 상단 반경
+    const float bottomRadius = 0.0f; // 하단 반경
+    const float topHeight = 0.0f;    // 상단 높이
+    const float bottomHeight = 0.0f;   // 하단 높이
 
     // 상단 중심점
     vertices.push_back({ XMFLOAT3(0, topHeight, 0), XMFLOAT3(0, 1, 0), XMFLOAT2(0.5f, 0.5f) });

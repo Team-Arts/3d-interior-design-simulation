@@ -14,14 +14,20 @@ class RoomModel
 {
 public:
     // 정점 구조체 
-
-
     struct Vertex
     {
         XMFLOAT3 Position;
         XMFLOAT3 Normal;
         XMFLOAT2 TexCoord;
         XMFLOAT4 Color;  // 색상 정보 추가
+    };
+
+    // SimpleVertex 구조체 추가 (라인 렌더링용)
+    struct SimpleVertex
+    {
+        XMFLOAT3 Position;
+        XMFLOAT3 Normal;
+        XMFLOAT2 TexCoord;
     };
 
     // 생성자 및 소멸자
@@ -60,6 +66,14 @@ public:
     // 방 업데이트 - 속성 변경 시 호출
     void UpdateRoom();
 
+    // 라인 관련 getter/setter
+    void SetShowEdges(bool show) { showEdges = show; }
+    bool GetShowEdges() const { return showEdges; }
+    void SetEdgeColor(const XMFLOAT4 &color) { edgeColor = color; }
+    XMFLOAT4 GetEdgeColor() const { return edgeColor; }
+    void SetEdgeThickness(float thickness) { edgeThickness = thickness; }
+    float GetEdgeThickness() const { return edgeThickness; }
+
 private:
     // RoomModel.h 에…
     ID3D11RasterizerState* wireframeRasterizerState = nullptr;
@@ -88,9 +102,9 @@ private:
     float roomWidth = 20.0f;
     float roomHeight = 10.0f;
     float roomDepth = 20.0f;
-    XMFLOAT4 floorColor = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);     // 바닥 색상
-    XMFLOAT4 ceilingColor = XMFLOAT4(0.95f, 0.95f, 0.95f, 1.0f); // 천장 색상
-    XMFLOAT4 wallColor = XMFLOAT4(0.85f, 0.85f, 0.85f, 1.0f);    // 벽 색상
+    XMFLOAT4 floorColor = XMFLOAT4(0.8f, 0.6f, 0.4f, 1.0f);     // 바닥 색상
+    XMFLOAT4 ceilingColor = XMFLOAT4(0.9f, 0.85f, 0.7f, 1.0f); // 천장 색상
+    XMFLOAT4 wallColor = XMFLOAT4(0.9f, 0.8f, 0.6f, 1.0f);    // 벽 색상
     XMFLOAT4 windowColor = XMFLOAT4(0.6f, 0.8f, 1.0f, 0.5f);     // 창문 색상
     bool hasWindow = false;                                       // 창문 유무
 
@@ -101,4 +115,17 @@ private:
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
     UINT indexCount = 0;
+
+    // 라인 렌더링용 추가 멤버
+    ID3D11Buffer *edgeVertexBuffer = nullptr;
+    ID3D11Buffer *edgeIndexBuffer = nullptr;
+    UINT edgeIndexCount = 0;
+
+    bool showEdges = true;                                 // 모서리 라인 표시 여부
+    XMFLOAT4 edgeColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // 라인 색상 
+    float edgeThickness = 10.0f;                           // 라인 두께
+
+    // 라인 렌더링 함수
+    void CreateEdgeBuffers(ID3D11Device *device);
+    void RenderEdges(ID3D11DeviceContext *deviceContext, const Camera &camera);
 };

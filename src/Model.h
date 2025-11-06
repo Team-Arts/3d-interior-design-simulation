@@ -26,7 +26,7 @@ public:
     {
         std::string Name;
         XMFLOAT3 Ambient = { 0.2f, 0.2f, 0.2f };
-        XMFLOAT3 Diffuse = { 0.8f, 0.8f, 0.8f };
+        XMFLOAT4 Diffuse = { 0.8f, 0.8f, 0.8f, 1.0f };
         XMFLOAT3 Specular = { 1.0f, 1.0f, 1.0f };
         float Shininess = 32.0f;
         std::string DiffuseMapPath;

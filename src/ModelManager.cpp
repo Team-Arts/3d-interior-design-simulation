@@ -454,18 +454,90 @@ void ModelManager::RenderModels(ID3D11DeviceContext *deviceContext)
     }
 
     // 그 다음 모델 렌더링
-    for (const auto &modelInfo : models)
+    //for (const auto &modelInfo : models)
+    //{
+    //    // 모델 타입에 따라 조명 관리자 전달
+    //    if (modelInfo.type == MODEL_OBJ)
+    //    {
+    //        auto objWrapper = std::static_pointer_cast<ObjModelWrapper>(modelInfo.model);
+    //        objWrapper->model->Render(deviceContext, camera, lightManager.get());
+    //    }
+    //    else if (modelInfo.type == MODEL_GLB)
+    //    {
+    //        // GLB 모델은 일반 렌더링 (향후 조명 지원 확장 가능)
+    //        modelInfo.model->Render(deviceContext, camera, lightManager.get());
+    //    }
+    //}
+
+    // 모델 렌더링 (hover 효과 적용)
+    for (int i = 0; i < models.size(); i++)
     {
-        // 모델 타입에 따라 조명 관리자 전달
-        if (modelInfo.type == MODEL_OBJ)
+        const auto &modelInfo = models[i];
+
+        // hover 상태 확인
+        bool isHovered = (isHoverEnabled && hoveredModelIndex == i);
+
+        // hover 상태이면 투명도 설정
+        if (isHovered)
         {
-            auto objWrapper = std::static_pointer_cast<ObjModelWrapper>(modelInfo.model);
-            objWrapper->model->Render(deviceContext, camera, lightManager.get());
+            // 모델에 hover 효과 적용
+            if (modelInfo.type == MODEL_OBJ)
+            {
+                auto objWrapper = std::static_pointer_cast<ObjModelWrapper>(modelInfo.model);
+
+                // OBJ 모델의 경우 재질의 투명도 임시 변경
+                auto &materials = const_cast<std::map<std::string, Model::Material> &>(objWrapper->model->GetMaterials());
+                std::map<std::string, XMFLOAT4> originalDiffuse; // 원본 색상 저장
+
+                for (auto &material : materials)
+                {
+                    originalDiffuse[material.first] = material.second.Diffuse;
+                    material.second.Diffuse.w = hoverAlpha; // 투명도 적용
+                }
+
+                objWrapper->model->Render(deviceContext, camera, lightManager.get());
+
+                // 원본 색상 복원
+                for (auto &material : materials)
+                {
+                    material.second.Diffuse = originalDiffuse[material.first];
+                }
+            }
+            else if (modelInfo.type == MODEL_GLB)
+            {
+                auto glbWrapper = std::static_pointer_cast<GlbModelWrapper>(modelInfo.model);
+
+                // GLB 모델의 경우 PBR 재질의 투명도 임시 변경
+                auto &materials = const_cast<std::map<std::string, GltfLoader::PbrMaterial> &>(glbWrapper->model->GetMaterials());
+                std::map<std::string, XMFLOAT4> originalBaseColor; // 원본 색상 저장
+
+                for (auto &material : materials)
+                {
+                    originalBaseColor[material.first] = material.second.BaseColorFactor;
+                    material.second.BaseColorFactor.w = hoverAlpha; // 투명도 적용
+                }
+
+                modelInfo.model->Render(deviceContext, camera, lightManager.get());
+
+                // 원본 색상 복원
+                for (auto &material : materials)
+                {
+                    material.second.BaseColorFactor = originalBaseColor[material.first];
+                }
+            }
         }
-        else if (modelInfo.type == MODEL_GLB)
+        else
         {
-            // GLB 모델은 일반 렌더링 (향후 조명 지원 확장 가능)
-            modelInfo.model->Render(deviceContext, camera, lightManager.get());
+            // 일반 렌더링
+            if (modelInfo.type == MODEL_OBJ)
+            {
+                auto objWrapper = std::static_pointer_cast<ObjModelWrapper>(modelInfo.model);
+                objWrapper->model->Render(deviceContext, camera, lightManager.get());
+            }
+            else if (modelInfo.type == MODEL_GLB)
+            {
+                modelInfo.model->Render(deviceContext, camera, lightManager.get());
+            }
         }
     }
 }
@@ -473,6 +545,16 @@ void ModelManager::RenderModels(ID3D11DeviceContext *deviceContext)
 // 프레임 처리 함수
 void ModelManager::ProcessFrame(HWND hwnd, float deltaTime)
 {
+    // 마우스 위치 추적 (hover 효과를 위해)
+    if (!isDragging && isHoverEnabled)
+    {
+        POINT cursorPos;
+        if (GetCursorPos(&cursorPos) && ScreenToClient(hwnd, &cursorPos))
+        {
+            OnMouseHover(cursorPos.x, cursorPos.y, hwnd);
+        }
+    }
+
     // 현재 카메라 모드에 따라 다른 처리
     if (isFirstPersonMode)
     {
@@ -503,6 +585,13 @@ void ModelManager::ProcessFrame(HWND hwnd, float deltaTime)
 
 void ModelManager::ProcessCharacterInput(HWND hwnd, float deltaTime)
 {
+    // 윈도우가 활성화된 상태인지 확인
+    if (GetActiveWindow() != hwnd && GetForegroundWindow() != hwnd)
+    {
+        // 윈도우가 비활성화된 상태이면 입력 처리하지 않음
+        return;
+    }
+
     // 키보드 입력 처리
     bool shiftPressed = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
     float moveSpeed = shiftPressed ? 5.0f : 3.0f; // 이동 속도 (m/s)
@@ -1462,7 +1551,7 @@ void ModelManager::RenderMainInterface(HWND hwnd)
 
     // 우측 속성 패널
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 350, 70), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(340, 500), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(250, 750), ImGuiCond_FirstUseEver);
     ImGui::Begin("속성", nullptr, ImGuiWindowFlags_NoCollapse);
     RenderPropertiesPanel();
     ImGui::End();
@@ -1472,17 +1561,22 @@ void ModelManager::RenderMainInterface(HWND hwnd)
 }
 
 // 사용법 도움말 팝업 표시
-void ModelManager::RenderDragHelpPopup()
+void ModelManager::RenderHelpPopup()
 {
-    if (ImGui::BeginPopup("DragHelpPopup"))
+    if (ImGui::BeginPopup("HelpPopup"))
     {
-        ImGui::Text("모델 드래그 도움말");
+        ImGui::Text("프로그램 사용 가이드");
         ImGui::Separator();
 
-        ImGui::BulletText("좌클릭 + 드래그: 모든 방향으로 자유롭게 이동");
-        ImGui::BulletText("Shift + 좌클릭 + 드래그: Y축(상하)으로만 이동");
-        ImGui::BulletText("Ctrl + 좌클릭 + 드래그: X축(좌우)으로만 이동");
-        ImGui::BulletText("Alt + 좌클릭 + 드래그: Z축(앞뒤)으로만 이동");
+        ImGui::BulletText("W: 앞으로 이동");
+        ImGui::BulletText("A: 왼쪽으로 이동");
+        ImGui::BulletText("S: 뒤로 이동");
+        ImGui::BulletText("D: 오른쪽으로 이동");
+        ImGui::BulletText("Q: 위로 이동");
+        ImGui::BulletText("E: 아래로 이동");
+        ImGui::BulletText("V: 1인칭 시점, 자유 시점 Toggle");
+        ImGui::BulletText("오브젝트 선택 및 이동: 마우스 좌클릭 후 드래그");
+        ImGui::BulletText("카메라 초점 돌리기: 마우스 우클릭 후 드래그");
 
         ImGui::EndPopup();
     }
@@ -1510,7 +1604,7 @@ void ModelManager::RenderToolbar(HWND hwnd)
     ImGui::SameLine();*/
 
     // GLB 모델 추가 버튼
-    if (EnhancedUI::IconButton("오브젝트 추가", EnhancedUI::ICON_GLB, buttonSize))
+    if (EnhancedUI::IconButton("오브젝트 추가", EnhancedUI::ICON_ADD, buttonSize))
     {
         std::string filePath;
         if (OpenGlbFileDialog(hwnd, filePath))
@@ -1532,7 +1626,7 @@ void ModelManager::RenderToolbar(HWND hwnd)
 
     // 저장 버튼
     ImGui::SameLine();
-    if (EnhancedUI::IconButton("인테리어 저장", "S", ImVec2(100, 40)))
+    if (EnhancedUI::IconButton("인테리어 저장", "", ImVec2(100, 40)))
     {
         // 파일 저장 다이얼로그
         std::string savePath;
@@ -1553,7 +1647,7 @@ void ModelManager::RenderToolbar(HWND hwnd)
 
     // 로드 버튼
     ImGui::SameLine();
-    if (EnhancedUI::IconButton("인테리어 로드", "L", ImVec2(100, 40)))
+    if (EnhancedUI::IconButton("인테리어 로드", "", ImVec2(100, 40)))
     {
         // 파일 로드 다이얼로그
         std::string loadPath;
@@ -1572,22 +1666,28 @@ void ModelManager::RenderToolbar(HWND hwnd)
         }
     }
 
-    ImGui::SameLine(ImGui::GetWindowWidth() - 420); // 위치 조정
+    // 도움말 버튼 추가
+     ImGui::SameLine(ImGui::GetWindowWidth() - 680);
+
+     if (EnhancedUI::IconButton("도움말", "", ImVec2(160, 40)))
+    {
+         ImGui::OpenPopup("HelpPopup");
+     }
+
+    ImGui::SameLine(ImGui::GetWindowWidth() - 445); // 위치 조정
 
     // 조명 설정 버튼 추가
     static bool showLightSettings = false;
-    if (EnhancedUI::IconButton("조명 설정", "L", ImVec2(120, 40)))
+    if (EnhancedUI::IconButton("조명 설정", "", ImVec2(80, 40)))
     { // "L"를 아이콘으로 사용
         showLightSettings = !showLightSettings;
     }
 
     ImGui::SameLine();
 
-    ImGui::SameLine(ImGui::GetWindowWidth() - 280);
-
     // 방 설정 버튼
     static bool showRoomSettings = false;
-    if (EnhancedUI::IconButton("방 설정", EnhancedUI::ICON_ROOM, ImVec2(120, 40)))
+    if (EnhancedUI::IconButton("방 설정", "", ImVec2(80, 40)))
     {
         showRoomSettings = !showRoomSettings;
     }
@@ -1597,29 +1697,59 @@ void ModelManager::RenderToolbar(HWND hwnd)
     // 카메라 설정 버튼
     static bool showCameraSettings = false;
 
-    if (EnhancedUI::IconButton("카메라", EnhancedUI::ICON_CAMERA, ImVec2(120, 40)))
+    if (EnhancedUI::IconButton("카메라", "", ImVec2(80, 40)))
     {
         showCameraSettings = !showCameraSettings;
     }
 
-    // 도움말 버튼 추가
-    ImGui::SameLine(ImGui::GetWindowWidth() - 680);
-
-    if (EnhancedUI::IconButton("드래그 도움말", "?", ImVec2(160, 40)))
-    {
-        ImGui::OpenPopup("DragHelpPopup");
-    }
-
     // 카메라 모드 전환 버튼 추가
-    ImGui::SameLine(ImGui::GetWindowWidth() - 510);
+    ImGui::SameLine();
+
     std::string cameraButtonLabel = isFirstPersonMode ? "자유 시점" : "1인칭 시점";
-    if (EnhancedUI::IconButton(cameraButtonLabel.c_str(), EnhancedUI::ICON_CAMERA))
+    if (EnhancedUI::IconButton(cameraButtonLabel.c_str(), "", ImVec2(80, 40)))
     {
         ToggleCameraMode();
     }
 
+    // Hover 설정 버튼 추가 (기존 버튼들 뒤에)
+    ImGui::SameLine();
+    static bool showHoverSettings = false;
+    if (EnhancedUI::IconButton("Hover 설정", "", ImVec2(80, 40)))
+    {
+        showHoverSettings = !showHoverSettings;
+    }
+
+    if (showHoverSettings)
+    {
+        ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x / 2 - 150, 100), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_FirstUseEver);
+        if (ImGui::Begin("Hover 설정", &showHoverSettings))
+        {
+            ImGui::Checkbox("Hover 효과 활성화", &isHoverEnabled);
+
+            if (isHoverEnabled)
+            {
+                ImGui::Spacing();
+                ImGui::Text("투명도 설정");
+                if (ImGui::SliderFloat("Hover 투명도", &hoverAlpha, 0.1f, 1.0f, "%.2f"))
+                {
+                    // 투명도 값 제한
+                    if (hoverAlpha < 0.1f)
+                        hoverAlpha = 0.1f;
+                    if (hoverAlpha > 1.0f)
+                        hoverAlpha = 1.0f;
+                }
+
+                ImGui::Text("현재 hover된 모델: %s",
+                            hoveredModelIndex >= 0 ? models[hoveredModelIndex].name.c_str() : "없음");
+            }
+
+            ImGui::End();
+        }
+    }
+
     // 도움말 팝업 렌더링
-    RenderDragHelpPopup();
+    RenderHelpPopup();
 
     ImGui::End();
 
@@ -2325,7 +2455,7 @@ void ModelManager::RenderRoomProperties()
 // 기존 RenderStatusBar 함수 수정
 void ModelManager::RenderStatusBar()
 {
-    ImGui::SetNextWindowPos(ImVec2(0, ImGui::GetIO().DisplaySize.y - 25));
+    ImGui::SetNextWindowPos(ImVec2(0, ImGui::GetIO().DisplaySize.y - 33));
     ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, 25));
     ImGui::Begin("##statusbar", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse);
 
@@ -2335,7 +2465,7 @@ void ModelManager::RenderStatusBar()
     // 드래그 상태 정보 표시
     RenderDragStatusInfo();
 
-    ImGui::SameLine(ImGui::GetWindowWidth() - 280);
+    ImGui::SameLine(ImGui::GetWindowWidth() - 350);
 
     // 현재 선택된 모델 표시
     if (selectedModelIndex >= 0 && selectedModelIndex < models.size())
@@ -2367,8 +2497,8 @@ Ray ModelManager::CreateRayFromScreenPoint(int screenX, int screenY, int screenW
     float ndcY = 1.0f - (2.0f * screenY / screenHeight);
 
     // 정규화된 장치 좌표로 레이 방향 계산
-    XMFLOAT4 rayStartNDC = XMFLOAT4(ndcX, ndcY, 0.0f, 1.0f);
-    XMFLOAT4 rayEndNDC = XMFLOAT4(ndcX, ndcY, 1.0f, 1.0f);
+    XMFLOAT4 rayStartNDC = XMFLOAT4(ndcX, ndcY, 0.0f, 1.0f); // Near plane
+    XMFLOAT4 rayEndNDC = XMFLOAT4(ndcX, ndcY, 1.0f, 1.0f);   // Far plane
 
     // NDC 좌표를 월드 좌표로 변환하기 위한 역행렬 계산
     XMMATRIX viewMatrix = camera.GetViewMatrix();
@@ -2385,10 +2515,12 @@ Ray ModelManager::CreateRayFromScreenPoint(int screenX, int screenY, int screenW
     rayEndWorld = XMVectorDivide(rayEndWorld, XMVectorSplatW(rayEndWorld));
 
     // 카메라 위치를 시작점으로, 방향을 계산
-    XMVECTOR rayOrigin = XMLoadFloat3(&ray.origin);
+    //XMVECTOR rayOrigin = XMLoadFloat3(&ray.origin);
+    XMVECTOR rayOrigin = rayStartWorld;
     XMVECTOR rayDir = XMVector3Normalize(XMVectorSubtract(rayEndWorld, rayStartWorld));
 
     // 결과 저장
+    XMStoreFloat3(&ray.origin, rayOrigin);
     XMStoreFloat3(&ray.direction, rayDir);
 
     return ray;
@@ -2403,7 +2535,14 @@ bool ModelManager::RayIntersectsBoundingBox(const Ray &ray, const BoundingBox &b
     XMVECTOR sphereCenter = XMLoadFloat3(&box.center);
 
     XMVECTOR originToCenter = XMVectorSubtract(sphereCenter, rayOrigin);
+
+    // XMVECTOR normalizedOriginToCenter = XMVector3Normalize(originToCenter);
+    // XMVECTOR normalizedRayDir = XMVector3Normalize(rayDir);
+
     float tca = XMVectorGetX(XMVector3Dot(originToCenter, rayDir));
+
+    //std::cout << "tca: " << tca << std::endl;
+    OutputDebugStringA(("tca: " + std::to_string(tca) + "\n").c_str());
 
     // 레이가 구에서 멀리 떨어져 있는 경우
     if (tca < 0.0f)
@@ -2454,7 +2593,7 @@ bool ModelManager::RayIntersectsBoundingBox(const Ray &ray, const BoundingBox &b
 int ModelManager::PickModel(const Ray &ray)
 {
     // 테스트 모드: GLB 모델 우선 선택
-    bool testMode = true; // 테스트 모드 활성화
+    bool testMode = false; // 테스트 모드 비활성화
     if (testMode)
     {
         // 가장 가까운 GLB 모델 찾기
@@ -2497,16 +2636,21 @@ int ModelManager::PickModel(const Ray &ray)
 
         // 각 모델의 바운딩 박스 정보 로그
         std::string modelType = (models[i].type == MODEL_GLB) ? "GLB" : "OBJ";
-        OutputDebugStringA(("모델 [" + std::to_string(i) + "] " + modelType +
+        /*OutputDebugStringA(("모델 [" + std::to_string(i) + "] " + modelType +
                             " - 중심: " + std::to_string(box.center.x) + "," +
                             std::to_string(box.center.y) + "," + std::to_string(box.center.z) +
                             " - 반지름: " + std::to_string(box.radius) + "\n")
-                               .c_str());
+                               .c_str());*/
+
+        std::cout << "모델 [" << i << "] " << modelType
+                  << " - 중심: " << box.center.x << "," << box.center.y << "," << box.center.z
+                  << " - 반지름: " << box.radius << std::endl;
 
         if (RayIntersectsBoundingBox(ray, box))
         {
 
-            OutputDebugStringA(("모델 [" + std::to_string(i) + "] 와 충돌 감지\n").c_str());
+            /*OutputDebugStringA(("모델 [" + std::to_string(i) + "] 와 충돌 감지\n").c_str());*/
+            std::cout << "모델 [" << i << "] 와 충돌 감지" << std::endl;
 
             // 충돌 거리 계산 (카메라에서 모델 중심까지의 거리)
             XMVECTOR rayOrigin = XMLoadFloat3(&ray.origin);
@@ -2679,11 +2823,74 @@ void ModelManager::OnMouseDown(int x, int y, HWND hwnd)
         dragStartIntersectPos = GetPlaneIntersectionPoint(ray, dragPlaneNormal, dragPlaneD);
         currentIntersectPos = dragStartIntersectPos;
     }
+
+    // 모든 모델의 바운딩 박스 정보 출력
+    OutputDebugStringA("=== 바운딩 박스 디버깅 ===\n");
+    for (int i = 0; i < models.size(); i++)
+    {
+        BoundingBox box = models[i].model->GetBoundingBox();
+        XMFLOAT3 position = models[i].model->GetPosition();
+        
+        OutputDebugStringA(("모델 [" + std::to_string(i) + "] " + models[i].name + "\n").c_str());
+        OutputDebugStringA(("  실제 위치: (" + std::to_string(position.x) + ", " + 
+                            std::to_string(position.y) + ", " + std::to_string(position.z) + ")\n").c_str());
+        OutputDebugStringA(("  바운딩 박스 중심: (" + std::to_string(box.center.x) + ", " + 
+                            std::to_string(box.center.y) + ", " + std::to_string(box.center.z) + ")\n").c_str());
+        OutputDebugStringA(("  바운딩 박스 크기: Min(" + std::to_string(box.min.x) + ", " + 
+                            std::to_string(box.min.y) + ", " + std::to_string(box.min.z) + 
+                            ") Max(" + std::to_string(box.max.x) + ", " + 
+                            std::to_string(box.max.y) + ", " + std::to_string(box.max.z) + ")\n").c_str());
+        OutputDebugStringA(("  반지름: " + std::to_string(box.radius) + "\n").c_str());
+    }
 }
 
-// OnMouseMove 함수 수정
+// OnMouseHover 함수 구현 (기존 OnMouseMove 함수 근처에 추가)
+void ModelManager::OnMouseHover(int x, int y, HWND hwnd)
+{
+    // Hover 기능이 비활성화되어 있거나 드래그 중이면 처리하지 않음
+    if (!isHoverEnabled || isDragging)
+    {
+        hoveredModelIndex = -1;
+        return;
+    }
+
+    // ImGui UI 위에서는 작동하지 않도록 함
+    if (ImGui::GetIO().WantCaptureMouse)
+    {
+        hoveredModelIndex = -1;
+        return;
+    }
+
+    // 현재 윈도우 크기 가져오기
+    RECT rect;
+    GetClientRect(hwnd, &rect);
+    int screenWidth = rect.right - rect.left;
+    int screenHeight = rect.bottom - rect.top;
+
+    // 마우스 위치에서 레이 생성
+    Ray ray = CreateRayFromScreenPoint(x, y, screenWidth, screenHeight);
+
+    // 레이와 충돌하는 모델 찾기
+    int newHoveredIndex = PickModel(ray);
+
+    // hover 상태가 변경된 경우에만 업데이트
+    if (newHoveredIndex != hoveredModelIndex)
+    {
+        hoveredModelIndex = newHoveredIndex;
+
+        // 디버그 출력 (선택사항)
+        if (hoveredModelIndex >= 0)
+        {
+            OutputDebugStringA(("모델 [" + std::to_string(hoveredModelIndex) + "] hover 시작\n").c_str());
+        }
+    }
+}
+
 void ModelManager::OnMouseMove(int x, int y, HWND hwnd)
 {
+    // 먼저 hover 처리
+    OnMouseHover(x, y, hwnd);
+
     // 드래그 중이고 선택된 모델이 있는 경우
     if (isDragging && draggedModelIndex >= 0)
     {
@@ -2817,7 +3024,7 @@ void ModelManager::RenderDragStatusInfo()
     // 드래그 중인 경우 상태 정보 표시
     if (isDragging && draggedModelIndex >= 0)
     {
-        ImGui::SameLine(ImGui::GetWindowWidth() - 500);
+        ImGui::SameLine(ImGui::GetWindowWidth() - 800);
 
         // 선택된 모델 이름
         std::string modelName = models[draggedModelIndex].name;
