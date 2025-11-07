@@ -348,3 +348,9 @@ void Camera::UpdateFirstPersonView()
         OutputDebugStringA("UpdateFirstPersonView: 알 수 없는 예외 발생\n");
     }
 }
+
+void Camera::UpdateAspectRatio(float aspectRatio)
+{
+    // 투영 행렬 재계산
+    SetProjection(fieldOfView, aspectRatio, nearPlane, farPlane);
+}

@@ -1,20 +1,21 @@
-#include <windows.h>
-#include <windowsx.h>
-#include <d3d11.h>
-#include <directxmath.h>
-#include <d3dcompiler.h>
-#include <fstream>
-#include <vector>
-#include <string> 
-#include <sstream>
-#include <imgui.h>
-#include "imgui_impl_win32.h"
-#include "imgui_impl_dx11.h"
-#include "Model.h"
+#include "Camera.h"     // Camera 클래스 정의를 위해 추가
 #include "GltfLoader.h" // GLB 로더 헤더 추가
+#include "Model.h"
 #include "ModelManager.h"
 #include "RoomModel.h"
-#include "Camera.h"  // Camera 클래스 정의를 위해 추가
+#include "imgui_impl_dx11.h"
+#include "imgui_impl_win32.h"
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <directxmath.h>
+#include <fstream>
+#include <imgui.h>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <windows.h>
+#include <windowsx.h>
+#include "../resource.h"  // 리소스 헤더 추가
 
 // 필요한 라이브러리 링크
 #pragma comment(lib, "d3d11.lib")
@@ -23,17 +24,17 @@
 
 // main.cpp의 전역 변수
 ModelManager modelManager;
-RoomModel* g_roomModel = nullptr;
-LARGE_INTEGER frequency;        // 타이머 주파수
-LARGE_INTEGER lastTime;         // 마지막 프레임 시간
-float deltaTime = 0.0f;         // 프레임 간 시간 차이
+RoomModel *g_roomModel = nullptr;
+LARGE_INTEGER frequency; // 타이머 주파수
+LARGE_INTEGER lastTime;  // 마지막 프레임 시간
+float deltaTime = 0.0f;  // 프레임 간 시간 차이
 // DirectX 11 변수
-ID3D11Device* g_pd3dDevice = nullptr;
-ID3D11DeviceContext* g_pd3dDeviceContext = nullptr;
-IDXGISwapChain* g_pSwapChain = nullptr;
-ID3D11RenderTargetView* g_mainRenderTargetView = nullptr;
-ID3D11DepthStencilView* g_pDepthStencilView = nullptr;
-ID3D11Texture2D* g_pDepthStencilBuffer = nullptr;
+ID3D11Device *g_pd3dDevice = nullptr;
+ID3D11DeviceContext *g_pd3dDeviceContext = nullptr;
+IDXGISwapChain *g_pSwapChain = nullptr;
+ID3D11RenderTargetView *g_mainRenderTargetView = nullptr;
+ID3D11DepthStencilView *g_pDepthStencilView = nullptr;
+ID3D11Texture2D *g_pDepthStencilBuffer = nullptr;
 
 // 함수 프로토타입 선언
 void CreateRenderTarget();
@@ -64,11 +65,11 @@ bool CreateDeviceD3D(HWND hWnd)
 
     // D3D11 디바이스 및 스왑 체인 생성
     D3D_FEATURE_LEVEL featureLevel;
-    const D3D_FEATURE_LEVEL featureLevelArray[2] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, };
-    HRESULT res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
-        featureLevelArray, 2, D3D11_SDK_VERSION,
-        &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel,
-        &g_pd3dDeviceContext);
+    const D3D_FEATURE_LEVEL featureLevelArray[2] = {
+        D3D_FEATURE_LEVEL_11_0,
+        D3D_FEATURE_LEVEL_10_0,
+    };
+    HRESULT res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, &g_pd3dDeviceContext);
     if (res != S_OK)
         return false;
 
@@ -79,7 +80,7 @@ bool CreateDeviceD3D(HWND hWnd)
 
 void CreateRenderTarget()
 {
-    ID3D11Texture2D* pBackBuffer;
+    ID3D11Texture2D *pBackBuffer;
     g_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
     g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &g_mainRenderTargetView);
     pBackBuffer->Release();
@@ -128,26 +129,82 @@ bool CreateDepthStencilView()
 
 void CleanupRenderTarget()
 {
-    if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = nullptr; }
+    if (g_mainRenderTargetView)
+    {
+        g_mainRenderTargetView->Release();
+        g_mainRenderTargetView = nullptr;
+    }
 }
 
 void CleanupDeviceD3D()
 {
     CleanupRenderTarget();
-    if (g_pDepthStencilView) { g_pDepthStencilView->Release(); g_pDepthStencilView = nullptr; }
-    if (g_pDepthStencilBuffer) { g_pDepthStencilBuffer->Release(); g_pDepthStencilBuffer = nullptr; }
-    if (g_pSwapChain) { g_pSwapChain->Release(); g_pSwapChain = nullptr; }
-    if (g_pd3dDeviceContext) { g_pd3dDeviceContext->Release(); g_pd3dDeviceContext = nullptr; }
-    if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = nullptr; }
+    if (g_pDepthStencilView)
+    {
+        g_pDepthStencilView->Release();
+        g_pDepthStencilView = nullptr;
+    }
+    if (g_pDepthStencilBuffer)
+    {
+        g_pDepthStencilBuffer->Release();
+        g_pDepthStencilBuffer = nullptr;
+    }
+    if (g_pSwapChain)
+    {
+        g_pSwapChain->Release();
+        g_pSwapChain = nullptr;
+    }
+    if (g_pd3dDeviceContext)
+    {
+        g_pd3dDeviceContext->Release();
+        g_pd3dDeviceContext = nullptr;
+    }
+    if (g_pd3dDevice)
+    {
+        g_pd3dDevice->Release();
+        g_pd3dDevice = nullptr;
+    }
+}
+
+void CleanupDepthStencil()
+{
+    if (g_pDepthStencilView)
+    {
+        g_pDepthStencilView->Release();
+        g_pDepthStencilView = nullptr;
+    }
+    if (g_pDepthStencilBuffer)
+    {
+        g_pDepthStencilBuffer->Release();
+        g_pDepthStencilBuffer = nullptr;
+    }
+}
+
+void CreateDepthStencil(UINT width, UINT height)
+{
+    // 깊이 스텐실 버퍼 생성
+    D3D11_TEXTURE2D_DESC depthDesc = {};
+    depthDesc.Width = width;
+    depthDesc.Height = height;
+    depthDesc.MipLevels = 1;
+    depthDesc.ArraySize = 1;
+    depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depthDesc.SampleDesc.Count = 1;
+    depthDesc.SampleDesc.Quality = 0;
+    depthDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+    g_pd3dDevice->CreateTexture2D(&depthDesc, nullptr, &g_pDepthStencilBuffer);
+    g_pd3dDevice->CreateDepthStencilView(g_pDepthStencilBuffer, nullptr, &g_pDepthStencilView);
 }
 
 // ImGui 초기화 및 윈도우 프로시저
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-//main.cpp 파일의 WndProc 함수를 수정합니다.
-//기존 WndProc 함수에 마우스 이벤트 처리 코드를 추가합니다.
+// main.cpp 파일의 WndProc 함수를 수정합니다.
+// 기존 WndProc 함수에 마우스 이벤트 처리 코드를 추가합니다.
 
 // 외부 전역 변수 선언 (main.cpp에 이미 있는 변수들)
-//ModelManager modelManager; // ModelManager 인스턴스에 대한 외부 참조
+// ModelManager modelManager; // ModelManager 인스턴스에 대한 외부 참조
 
 // 기존 WndProc 함수를 다음과 같이 수정합니다:
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -157,63 +214,89 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     switch (msg)
     {
-    case WM_KEYDOWN:
-        // 'V' 키로 시점 전환
-        if (wParam == 'V') {
-            modelManager.ToggleCameraMode();
-            return 0;
-        }
-        break;
-    case WM_SIZE:
-        if (g_pd3dDevice != nullptr && wParam != SIZE_MINIMIZED)
-        {
-            CleanupRenderTarget();
-            g_pSwapChain->ResizeBuffers(0, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam), DXGI_FORMAT_UNKNOWN, 0);
-            CreateRenderTarget();
-        }
-        return 0;
-    case WM_SYSCOMMAND:
-        if ((wParam & 0xfff0) == SC_KEYMENU)  // Alt 키 메뉴 비활성화
-            return 0;
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        return 0;
+        case WM_KEYDOWN:
+            // 'V' 키로 시점 전환
+            if (wParam == 'V')
+            {
+                modelManager.ToggleCameraMode();
+                return 0;
+            }
+            break;
+        case WM_SIZE:
+            if (g_pd3dDevice != nullptr && wParam != SIZE_MINIMIZED)
+            {
+                UINT width = LOWORD(lParam);
+                UINT height = HIWORD(lParam);
 
-        // 마우스 이벤트 처리 추가
-    case WM_LBUTTONDOWN:
-    {
-        // ImGui가 마우스를 사용하지 않는 경우에만 처리
-        if (!ImGui::GetIO().WantCaptureMouse)
+                if (width > 0 && height > 0)
+                {
+                    // 기존 리소스 정리
+                    CleanupRenderTarget();
+                    CleanupDepthStencil();
+
+                    // 스왑 체인 리사이즈
+                    CleanupRenderTarget();
+                    g_pSwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+                    CreateRenderTarget();
+
+                    // 뷰포트 업데이트
+                    D3D11_VIEWPORT vp;
+                    vp.Width = (FLOAT)width;
+                    vp.Height = (FLOAT)height;
+                    vp.MinDepth = 0.0f;
+                    vp.MaxDepth = 1.0f;
+                    vp.TopLeftX = 0;
+                    vp.TopLeftY = 0;
+                    g_pd3dDeviceContext->RSSetViewports(1, &vp);
+
+                    // 카메라 종횡비 업데이트
+                    float aspectRatio = (float)width / (float)height;
+                    modelManager.GetCamera().UpdateAspectRatio(aspectRatio);
+                }
+            }
+            break;
+        case WM_SYSCOMMAND:
+            if ((wParam & 0xfff0) == SC_KEYMENU) // Alt 키 메뉴 비활성화
+                return 0;
+            break;
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
+
+            // 마우스 이벤트 처리 추가
+        case WM_LBUTTONDOWN:
         {
-            int xPos = GET_X_LPARAM(lParam);
-            int yPos = GET_Y_LPARAM(lParam);
-            modelManager.OnMouseDown(xPos, yPos, hWnd);
+            // ImGui가 마우스를 사용하지 않는 경우에만 처리
+            if (!ImGui::GetIO().WantCaptureMouse)
+            {
+                int xPos = GET_X_LPARAM(lParam);
+                int yPos = GET_Y_LPARAM(lParam);
+                modelManager.OnMouseDown(xPos, yPos, hWnd);
+            }
+            return 0;
         }
-        return 0;
-    }
-    case WM_MOUSEMOVE:
-    {
-        // ImGui가 마우스를 사용하지 않는 경우에만 처리
-        if (!ImGui::GetIO().WantCaptureMouse)
+        case WM_MOUSEMOVE:
         {
-            int xPos = GET_X_LPARAM(lParam);
-            int yPos = GET_Y_LPARAM(lParam);
-            modelManager.OnMouseMove(xPos, yPos, hWnd);
+            // ImGui가 마우스를 사용하지 않는 경우에만 처리
+            if (!ImGui::GetIO().WantCaptureMouse)
+            {
+                int xPos = GET_X_LPARAM(lParam);
+                int yPos = GET_Y_LPARAM(lParam);
+                modelManager.OnMouseMove(xPos, yPos, hWnd);
+            }
+            return 0;
         }
-        return 0;
-    }
-    case WM_LBUTTONUP:
-    {
-        // ImGui가 마우스를 사용하지 않는 경우에만 처리
-        if (!ImGui::GetIO().WantCaptureMouse)
+        case WM_LBUTTONUP:
         {
-            int xPos = GET_X_LPARAM(lParam);
-            int yPos = GET_Y_LPARAM(lParam);
-            modelManager.OnMouseUp(xPos, yPos);
+            // ImGui가 마우스를 사용하지 않는 경우에만 처리
+            if (!ImGui::GetIO().WantCaptureMouse)
+            {
+                int xPos = GET_X_LPARAM(lParam);
+                int yPos = GET_Y_LPARAM(lParam);
+                modelManager.OnMouseUp(xPos, yPos);
+            }
+            return 0;
         }
-        return 0;
-    }
     }
     return DefWindowProc(hWnd, msg, wParam, lParam);
 }
@@ -222,8 +305,9 @@ void InitImGui(HWND hwnd)
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // 키보드 제어 활성화
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // 키보드 제어 활성화
 
     // ImGui 스타일 설정은 ModelManager에서 향상된 UI 스타일을 적용하므로 여기서는 기본 스타일만 설정
     ImGui::StyleColorsDark();
@@ -236,7 +320,8 @@ void InitImGui(HWND hwnd)
     io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\malgun.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesKorean());
 
     // 한글 폰트가 없는 경우 기본 폰트 사용
-    if (io.Fonts->Fonts.empty()) {
+    if (io.Fonts->Fonts.empty())
+    {
         io.Fonts->AddFontDefault();
     }
 
@@ -245,18 +330,30 @@ void InitImGui(HWND hwnd)
 }
 
 // int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-// int main(int argc, char **argv) 
+// int main(int argc, char **argv)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     // 윈도우 생성
-    WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"DirectX 3D Viewer", nullptr };
+    WNDCLASSEX wc = {
+        sizeof(WNDCLASSEX), 
+        CS_CLASSDC, 
+        WndProc, 
+        0L, 
+        0L, 
+        GetModuleHandle(nullptr), 
+        LoadIcon(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_ICON1)), // 아이콘 설정
+        nullptr, 
+        nullptr, 
+        nullptr, 
+        L"DirectX 3D Viewer", 
+        LoadIcon(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_ICON1)) // 작은 아이콘도 설정
+    };
     RegisterClassEx(&wc);
 
     HWND hwnd = CreateWindow(wc.lpszClassName, L"3D Interior Design Simulation", WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800, nullptr, nullptr, wc.hInstance, nullptr);
 
     // 모델 관리자 생성
-    //ModelManager modelManager;
-    
+    // ModelManager modelManager;
 
     // 윈도우 생성 후:
     QueryPerformanceFrequency(&frequency);
@@ -272,11 +369,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // 방 모델 초기화
     auto roomModel = std::make_shared<RoomModel>();
-    if (!roomModel->Initialize(g_pd3dDevice)) {
+    if (!roomModel->Initialize(g_pd3dDevice))
+    {
         // 오류 처리
         OutputDebugStringA("RoomModel 초기화 실패\n");
     }
-    else {
+    else
+    {
         modelManager.SetRoomModel(roomModel);
         OutputDebugStringA("RoomModel 초기화 성공\n");
     }
@@ -326,7 +425,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         lastTime = currentTime;
 
         // 너무 큰 델타 타임 방지 (예: 디버그 일시 중지 후)
-        if (deltaTime > 0.1f) deltaTime = 0.1f;
+        if (deltaTime > 0.1f)
+            deltaTime = 0.1f;
 
         // ImGui 프레임 시작
         ImGui_ImplDX11_NewFrame();
@@ -338,7 +438,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         // 렌더링
         g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, g_pDepthStencilView);
-        float clearColor[4] = { 0.95f, 0.92f, 0.85f, 1.0f }; // 어두운 회색 배경
+        float clearColor[4] = {0.95f, 0.92f, 0.85f, 1.0f}; // 어두운 회색 배경
         g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, clearColor);
         g_pd3dDeviceContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
@@ -359,7 +459,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     ImGui::DestroyContext();
 
     // main.cpp
-    if (roomModel) {
+    if (roomModel)
+    {
         modelManager.SetRoomModel(roomModel);
     }
 

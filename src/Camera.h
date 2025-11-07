@@ -65,6 +65,8 @@ public:
     // UpdateFirstPersonView 함수 추가
     void UpdateFirstPersonView();
 
+    void UpdateAspectRatio(float aspectRatio);
+
 private:
     XMFLOAT3 position; // 카메라 위치
     XMFLOAT3 rotation; // 카메라 회전 (피치, 요, 롤)
