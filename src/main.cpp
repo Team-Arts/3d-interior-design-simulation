@@ -1,5 +1,6 @@
-#include "Camera.h"     // Camera 클래스 정의를 위해 추가
-#include "GltfLoader.h" // GLB 로더 헤더 추가
+#include "../resource.h" // 리소스 헤더 추가
+#include "Camera.h"      // Camera 클래스 정의를 위해 추가
+#include "GltfLoader.h"  // GLB 로더 헤더 추가
 #include "Model.h"
 #include "ModelManager.h"
 #include "RoomModel.h"
@@ -15,7 +16,6 @@
 #include <vector>
 #include <windows.h>
 #include <windowsx.h>
-#include "../resource.h"  // 리소스 헤더 추가
 
 // 필요한 라이브러리 링크
 #pragma comment(lib, "d3d11.lib")
@@ -75,6 +75,19 @@ bool CreateDeviceD3D(HWND hWnd)
 
     CreateRenderTarget();
     CreateDepthStencilView();
+
+    D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
+    depthStencilDesc.DepthEnable = TRUE;
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+    depthStencilDesc.StencilEnable = FALSE;
+
+    ID3D11DepthStencilState *depthStencilState = nullptr;
+    if (SUCCEEDED(g_pd3dDevice->CreateDepthStencilState(&depthStencilDesc, &depthStencilState)))
+    {
+        g_pd3dDeviceContext->OMSetDepthStencilState(depthStencilState, 1);
+        depthStencilState->Release(); // 즉시 해제 (DeviceContext가 참조 유지)
+    }
     return true;
 }
 
@@ -231,13 +244,13 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 if (width > 0 && height > 0)
                 {
                     // 기존 리소스 정리
-                    CleanupRenderTarget();
                     CleanupDepthStencil();
 
                     // 스왑 체인 리사이즈
                     CleanupRenderTarget();
                     g_pSwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
                     CreateRenderTarget();
+                    CreateDepthStencil(width, height);
 
                     // 뷰포트 업데이트
                     D3D11_VIEWPORT vp;
@@ -335,17 +348,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
     // 윈도우 생성
     WNDCLASSEX wc = {
-        sizeof(WNDCLASSEX), 
-        CS_CLASSDC, 
-        WndProc, 
-        0L, 
-        0L, 
-        GetModuleHandle(nullptr), 
+        sizeof(WNDCLASSEX),
+        CS_CLASSDC,
+        WndProc,
+        0L,
+        0L,
+        GetModuleHandle(nullptr),
         LoadIcon(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_ICON1)), // 아이콘 설정
-        nullptr, 
-        nullptr, 
-        nullptr, 
-        L"DirectX 3D Viewer", 
+        nullptr,
+        nullptr,
+        nullptr,
+        L"DirectX 3D Viewer",
         LoadIcon(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_ICON1)) // 작은 아이콘도 설정
     };
     RegisterClassEx(&wc);

@@ -468,7 +468,8 @@ bool GltfLoader::LoadGlbModel(const std::string& filename, ID3D11Device* device)
     ZeroMemory(&rastDesc, sizeof(rastDesc));
     rastDesc.FillMode = D3D11_FILL_SOLID;
     rastDesc.CullMode = D3D11_CULL_NONE; // 양면 렌더링
-    rastDesc.FrontCounterClockwise = FALSE;
+    rastDesc.FrontCounterClockwise = TRUE;
+    rastDesc.DepthClipEnable = TRUE; // 깊이 클리핑 활성화
     device->CreateRasterizerState(&rastDesc, &rasterizerState);
 
     // 샘플러 상태 생성
@@ -488,9 +489,23 @@ bool GltfLoader::LoadGlbModel(const std::string& filename, ID3D11Device* device)
         return false;
     }
 
+    // 블렌드 상태 생성
+    D3D11_BLEND_DESC blendDesc = {};
+    blendDesc.RenderTarget[0].BlendEnable = TRUE;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
-    
-  
+    hr = device->CreateBlendState(&blendDesc, &blendState);
+    if (FAILED(hr))
+    {
+        std::cerr << "Failed to create blend state." << std::endl;
+        return false;
+    }
 
     return true;
 }
@@ -1234,6 +1249,13 @@ void GltfLoader::Render(ID3D11DeviceContext* deviceContext, const Camera& camera
     deviceContext->IASetInputLayout(inputLayout);
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+    // 블렌드 상태 설정
+    if (blendState)
+    {
+        float blendFactor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+        deviceContext->OMSetBlendState(blendState, blendFactor, 0xFFFFFFFF);
+    }
+
     // 샘플러 상태 설정
     deviceContext->PSSetSamplers(0, 1, &samplerState);
 
@@ -1531,6 +1553,7 @@ void GltfLoader::Release()
     if (pixelShader) { pixelShader->Release(); pixelShader = nullptr; }
     if (inputLayout) { inputLayout->Release(); inputLayout = nullptr; }
     if (constantBuffer) { constantBuffer->Release(); constantBuffer = nullptr; }
+    if (blendState) { blendState->Release(); blendState = nullptr; }
     if (rasterizerState) { rasterizerState->Release(); rasterizerState = nullptr; }
     if (samplerState) { samplerState->Release(); samplerState = nullptr; }
 

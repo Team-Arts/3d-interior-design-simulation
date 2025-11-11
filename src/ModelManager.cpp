@@ -440,59 +440,58 @@ void ModelManager::RemoveModel(int index)
 
 void ModelManager::RenderModels(ID3D11DeviceContext *deviceContext)
 {
-    // 먼저 방 렌더링
+    // 1. 먼저 방 렌더링 (불투명)
     if (roomModel)
     {
-        // 방 모델에도 조명 관리자 전달
         roomModel->Render(deviceContext, camera, lightManager.get());
     }
 
-    // (1인칭 모드에서는 자신을 보지 못함)
+    // 2. 불투명 모델 렌더링
+    for (int i = 0; i < models.size(); i++)
+    {
+        const auto &modelInfo = models[i];
+        bool isHovered = (isHoverEnabled && hoveredModelIndex == i);
+        
+        // hover 상태가 아닌 경우만 먼저 렌더링
+        if (!isHovered)
+        {
+            if (modelInfo.type == MODEL_OBJ)
+            {
+                auto objWrapper = std::static_pointer_cast<ObjModelWrapper>(modelInfo.model);
+                objWrapper->model->Render(deviceContext, camera, lightManager.get());
+            }
+            else if (modelInfo.type == MODEL_GLB)
+            {
+                modelInfo.model->Render(deviceContext, camera, lightManager.get());
+            }
+        }
+    }
+
+    // 3. 더미 캐릭터 렌더링 (1인칭 모드가 아닐 때)
     if (dummyCharacter && !isFirstPersonMode)
     {
         dummyCharacter->Render(deviceContext, camera);
     }
 
-    // 그 다음 모델 렌더링
-    //for (const auto &modelInfo : models)
-    //{
-    //    // 모델 타입에 따라 조명 관리자 전달
-    //    if (modelInfo.type == MODEL_OBJ)
-    //    {
-    //        auto objWrapper = std::static_pointer_cast<ObjModelWrapper>(modelInfo.model);
-    //        objWrapper->model->Render(deviceContext, camera, lightManager.get());
-    //    }
-    //    else if (modelInfo.type == MODEL_GLB)
-    //    {
-    //        // GLB 모델은 일반 렌더링 (향후 조명 지원 확장 가능)
-    //        modelInfo.model->Render(deviceContext, camera, lightManager.get());
-    //    }
-    //}
-
-    // 모델 렌더링 (hover 효과 적용)
+    // 4. 투명/Hover 모델 렌더링 (마지막에)
     for (int i = 0; i < models.size(); i++)
     {
         const auto &modelInfo = models[i];
-
-        // hover 상태 확인
         bool isHovered = (isHoverEnabled && hoveredModelIndex == i);
-
-        // hover 상태이면 투명도 설정
+        
         if (isHovered)
         {
-            // 모델에 hover 효과 적용
+            // hover 상태인 경우 투명도 적용하여 렌더링
             if (modelInfo.type == MODEL_OBJ)
             {
                 auto objWrapper = std::static_pointer_cast<ObjModelWrapper>(modelInfo.model);
-
-                // OBJ 모델의 경우 재질의 투명도 임시 변경
                 auto &materials = const_cast<std::map<std::string, Model::Material> &>(objWrapper->model->GetMaterials());
-                std::map<std::string, XMFLOAT4> originalDiffuse; // 원본 색상 저장
+                std::map<std::string, XMFLOAT4> originalDiffuse;
 
                 for (auto &material : materials)
                 {
                     originalDiffuse[material.first] = material.second.Diffuse;
-                    material.second.Diffuse.w = hoverAlpha; // 투명도 적용
+                    material.second.Diffuse.w = hoverAlpha;
                 }
 
                 objWrapper->model->Render(deviceContext, camera, lightManager.get());
@@ -524,19 +523,6 @@ void ModelManager::RenderModels(ID3D11DeviceContext *deviceContext)
                 {
                     material.second.BaseColorFactor = originalBaseColor[material.first];
                 }
-            }
-        }
-        else
-        {
-            // 일반 렌더링
-            if (modelInfo.type == MODEL_OBJ)
-            {
-                auto objWrapper = std::static_pointer_cast<ObjModelWrapper>(modelInfo.model);
-                objWrapper->model->Render(deviceContext, camera, lightManager.get());
-            }
-            else if (modelInfo.type == MODEL_GLB)
-            {
-                modelInfo.model->Render(deviceContext, camera, lightManager.get());
             }
         }
     }
@@ -1685,9 +1671,9 @@ void ModelManager::RenderToolbar(HWND hwnd)
 
     ImGui::SameLine();
 
-    // 방 설정 버튼
+    // 공간 설정 버튼
     static bool showRoomSettings = false;
-    if (EnhancedUI::IconButton("방 설정", "", ImVec2(80, 40)))
+    if (EnhancedUI::IconButton("공간 설정", "", ImVec2(80, 40)))
     {
         showRoomSettings = !showRoomSettings;
     }
@@ -1768,12 +1754,12 @@ void ModelManager::RenderToolbar(HWND hwnd)
         ImGui::End();
     }
 
-    // 방 설정 창 (팝업 대신 일반 창으로)
+    // 공간 설정 창 (팝업 대신 일반 창으로)
     if (showRoomSettings && roomModel)
     {
         ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x / 2 - 150, 100), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(300, 400), ImGuiCond_FirstUseEver);
-        if (ImGui::Begin("방 설정", &showRoomSettings))
+        if (ImGui::Begin("공간 설정", &showRoomSettings))
         {
             RenderRoomProperties();
             ImGui::End();
@@ -2366,7 +2352,7 @@ void ModelManager::RenderLoadingProgress()
     ImGui::End();
 }
 
-// 방 속성 렌더링 (개선된 버전)
+// 공간 속성 렌더링 (개선된 버전)
 void ModelManager::RenderRoomProperties()
 {
     if (!roomModel)
@@ -2377,7 +2363,7 @@ void ModelManager::RenderRoomProperties()
     float height = roomModel->GetRoomHeight();
     float depth = roomModel->GetRoomDepth();
 
-    EnhancedUI::RenderHeader("방 크기");
+    EnhancedUI::RenderHeader("공간 크기");
 
     bool sizeChanged = false;
 
@@ -2394,9 +2380,9 @@ void ModelManager::RenderRoomProperties()
         roomModel->SetRoomDepth(depth);
     }
 
-    EnhancedUI::RenderHeader("방 색상");
+    EnhancedUI::RenderHeader("공간 색상");
 
-    // 방 색상 조정
+    // 공간 색상 조정
     XMFLOAT4 floorColor = roomModel->GetFloorColor();
     XMFLOAT4 ceilingColor = roomModel->GetCeilingColor();
     XMFLOAT4 wallColor = roomModel->GetWallColor();

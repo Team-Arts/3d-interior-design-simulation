@@ -203,6 +203,7 @@ private:
     ID3D11Buffer* constantBuffer = nullptr;
     ID3D11SamplerState* samplerState = nullptr;
     ID3D11RasterizerState* rasterizerState = nullptr;
+    ID3D11BlendState *blendState = nullptr;
 
     // 모델 정보
     ModelInfo modelInfo;
