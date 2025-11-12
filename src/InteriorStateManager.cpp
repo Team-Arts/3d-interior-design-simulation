@@ -159,7 +159,28 @@ InteriorDesign::InteriorState InteriorStateManager::CaptureCurrentState(
     
     // 조명 정보 캡처 (LightManager에 접근자 메서드가 필요함)
     // 이 부분도 LightManager에 GetLights() 같은 메서드가 필요합니다.
-    state.lights.clear();
+    for (int i = 0; i < lightManager->GetLightCount(); ++i)
+    {
+        Light *light = lightManager->GetLight(i);
+        if (light)
+        {
+            InteriorDesign::SavedLightInfo lightInfo;
+            lightInfo.type = static_cast<int>(light->GetType());
+            lightInfo.position = light->GetPosition();
+            lightInfo.direction = light->GetDirection();
+            lightInfo.color = light->GetColor();
+            lightInfo.intensity = light->GetIntensity();
+            lightInfo.range = light->GetRange();
+            lightInfo.attenuation = light->GetAttenuation();
+
+            // 스포트라이트의 경우 각도 정보 저장
+            LightData lightData = light->GetLightData();
+            lightInfo.innerCone = lightData.Factors.z;
+            lightInfo.outerCone = lightData.Factors.w;
+
+            state.lights.push_back(lightInfo);
+        }
+    }
 
     return state;
 }
@@ -219,9 +240,28 @@ bool InteriorStateManager::RestoreState(const InteriorDesign::InteriorState &sta
         }
 
         // 조명들 복원 (LightManager에 ClearLights(), AddLight() 등의 메서드가 필요함)
-        for (const auto &lightInfo : state.lights)
+        for (auto &lightInfo : state.lights)
         {
             // 조명 추가 및 설정
+            int lightIndex = lightManager->AddLight(static_cast<LightType>(lightInfo.type));
+            Light *light = lightManager->GetLight(lightIndex);
+            if (light)
+            {
+                light->SetPosition(lightInfo.position.x, lightInfo.position.y, lightInfo.position.z);
+                light->SetDirection(lightInfo.direction.x, lightInfo.direction.y, lightInfo.direction.z);
+                light->SetColor(lightInfo.color.x, lightInfo.color.y, lightInfo.color.z);
+                light->SetIntensity(lightInfo.intensity);
+                light->SetRange(lightInfo.range);
+                light->SetAttenuation(lightInfo.attenuation);
+                // 스포트라이트의 경우 각도 정보 설정
+                //if (lightInfo.type == LIGHT_SPOT)
+                //{
+                //    LightData lightData = light->GetLightData();
+                //    lightData.Factors.z = lightInfo.innerCone;
+                //    lightData.Factors.w = lightInfo.outerCone;
+                //    light->SetLightData(lightData);
+                //}
+            }
         }
 
         return true;

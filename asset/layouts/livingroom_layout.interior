@@ -1,0 +1,334 @@
+{
+    "camera": {
+        "farPlane": 1000.0,
+        "fieldOfView": 0.7853981852531433,
+        "mode": 0,
+        "nearPlane": 0.10000000149011612,
+        "position": [
+            -2.737704277038574,
+            1.7265374660491943,
+            -16.04682731628418
+        ],
+        "rotation": [
+            7.500109672546387,
+            10.50030517578125,
+            0.0
+        ]
+    },
+    "createdAt": "2025-11-13 00:25:15",
+    "description": "",
+    "lights": [
+        {
+            "attenuation": 1.0,
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "direction": [
+                0.5,
+                -1.0,
+                0.5
+            ],
+            "innerCone": 0.7853981852531433,
+            "intensity": 1.0,
+            "outerCone": 1.0471975803375244,
+            "position": [
+                0.0,
+                5.0,
+                0.0
+            ],
+            "range": 10.0,
+            "type": 0
+        },
+        {
+            "attenuation": 1.0,
+            "color": [
+                0.9831223487854004,
+                0.9831223487854004,
+                0.9831223487854004
+            ],
+            "direction": [
+                0.5,
+                -1.0,
+                0.5
+            ],
+            "innerCone": 0.7853981852531433,
+            "intensity": 3.4800000190734863,
+            "outerCone": 1.0471975803375244,
+            "position": [
+                13.399999618530273,
+                -5.300000190734863,
+                21.200000762939453
+            ],
+            "range": 32.5,
+            "type": 1
+        },
+        {
+            "attenuation": 1.0,
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "direction": [
+                0.0,
+                -1.0,
+                0.0
+            ],
+            "innerCone": 0.7853981852531433,
+            "intensity": 3.0899999141693115,
+            "outerCone": 1.0471975803375244,
+            "position": [
+                -16.0,
+                -5.199999809265137,
+                20.100000381469727
+            ],
+            "range": 29.799999237060547,
+            "type": 1
+        }
+    ],
+    "models": [
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\301_sofa1.glb",
+            "name": "301_sofa1.glb",
+            "position": [
+                12.964118003845215,
+                -8.623693466186523,
+                4.28726863861084
+            ],
+            "rotation": [
+                0.0,
+                -90.79000091552734,
+                0.0
+            ],
+            "scale": [
+                4.793333530426025,
+                4.793333530426025,
+                4.793333530426025
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\302_sofa2.glb",
+            "name": "302_sofa2.glb",
+            "position": [
+                12.413525581359863,
+                -6.242274284362793,
+                -3.6973869800567627
+            ],
+            "rotation": [
+                0.0,
+                -90.80000305175781,
+                0.0
+            ],
+            "scale": [
+                4.690000057220459,
+                3.75,
+                3.9100000858306885
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\506_tv_stand.glb",
+            "name": "506_tv_stand.glb",
+            "position": [
+                -13.260000228881836,
+                -8.220000267028809,
+                -0.18509864807128906
+            ],
+            "rotation": [
+                0.0,
+                89.19999694824219,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                5.0,
+                5.0
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\505_tv.glb",
+            "name": "505_tv.glb",
+            "position": [
+                -13.467850685119629,
+                -5.063172340393066,
+                -0.21802285313606262
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                5.0,
+                5.0
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\504_wooden_floor_lamp.glb",
+            "name": "504_wooden_floor_lamp.glb",
+            "position": [
+                -13.36953353881836,
+                -8.386249542236328,
+                15.58758544921875
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                3.9533331394195557,
+                3.9533331394195557,
+                3.9533331394195557
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\502_monstera_1_low_poly.glb",
+            "name": "502_monstera_1_low_poly.glb",
+            "position": [
+                -13.234158515930176,
+                -8.477033615112305,
+                -14.109999656677246
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                4.639999866485596,
+                4.639999866485596,
+                4.639999866485596
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\209_livingroom_table.glb",
+            "name": "209_livingroom_table.glb",
+            "position": [
+                3.190000057220459,
+                -8.229999542236328,
+                0.5299999713897705
+            ],
+            "rotation": [
+                0.0,
+                -89.19999694824219,
+                0.0
+            ],
+            "scale": [
+                4.349999904632568,
+                2.4800000190734863,
+                5.0
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\501_christmas_gift_boxes.glb",
+            "name": "501_christmas_gift_boxes.glb",
+            "position": [
+                -6.639999866485596,
+                -8.229999542236328,
+                13.8100004196167
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                4.190000057220459,
+                4.190000057220459,
+                4.190000057220459
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\205_office_desk_with_chair_computer1.glb",
+            "name": "205_office_desk_with_chair_computer1.glb",
+            "position": [
+                -1.8227554559707642,
+                -8.2609224319458,
+                15.232693672180176
+            ],
+            "rotation": [
+                0.0,
+                -180.0,
+                0.0
+            ],
+            "scale": [
+                3.640000104904175,
+                3.640000104904175,
+                3.640000104904175
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\504_wooden_floor_lamp.glb",
+            "name": "504_wooden_floor_lamp.glb",
+            "position": [
+                13.380000114440918,
+                -8.239999771118164,
+                16.309999465942383
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                3.9033334255218506,
+                3.9033334255218506,
+                3.9033334255218506
+            ],
+            "type": "GLB",
+            "visible": true
+        }
+    ],
+    "room": {
+        "ceilingColor": [
+            0.8999999761581421,
+            0.8500000238418579,
+            0.699999988079071,
+            1.0
+        ],
+        "depth": 35.400001525878906,
+        "floorColor": [
+            0.800000011920929,
+            0.6000000238418579,
+            0.4000000059604645,
+            1.0
+        ],
+        "hasWindow": false,
+        "height": 16.780000686645508,
+        "wallColor": [
+            0.8999999761581421,
+            0.800000011920929,
+            0.6000000238418579,
+            1.0
+        ],
+        "width": 29.600000381469727,
+        "windowColor": [
+            0.6000000238418579,
+            0.800000011920929,
+            1.0,
+            0.5
+        ]
+    },
+    "version": "1.0"
+}

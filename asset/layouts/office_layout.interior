@@ -1,0 +1,369 @@
+{
+    "camera": {
+        "farPlane": 1000.0,
+        "fieldOfView": 0.7853981852531433,
+        "mode": 0,
+        "nearPlane": 0.10000000149011612,
+        "position": [
+            41.29322814941406,
+            16.497344970703125,
+            -20.091007232666016
+        ],
+        "rotation": [
+            10.89977741241455,
+            677.5990600585938,
+            0.0
+        ]
+    },
+    "createdAt": "2025-11-12 22:44:40",
+    "description": "",
+    "lights": [],
+    "models": [
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\room\\_.glb",
+            "name": "_.glb",
+            "position": [
+                -30.0,
+                8.869999885559082,
+                0.1773156225681305
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                5.0,
+                5.0
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\201_office_desk1.glb",
+            "name": "201_office_desk1.glb",
+            "position": [
+                22.647377014160156,
+                9.148138999938965,
+                0.7397432327270508
+            ],
+            "rotation": [
+                0.0,
+                -180.0,
+                0.0
+            ],
+            "scale": [
+                4.070000171661377,
+                4.070000171661377,
+                4.070000171661377
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\202_office_desk2.glb",
+            "name": "202_office_desk2.glb",
+            "position": [
+                25.93888282775879,
+                9.282267570495605,
+                2.038931369781494
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                4.923333644866943,
+                4.230000019073486,
+                4.923333644866943
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\203_drawer_desk.glb",
+            "name": "203_drawer_desk.glb",
+            "position": [
+                18.848487854003906,
+                9.339462280273438,
+                -8.042874336242676
+            ],
+            "rotation": [
+                0.0,
+                -180.0,
+                0.0
+            ],
+            "scale": [
+                3.31000018119812,
+                4.510000228881836,
+                3.31000018119812
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\204_desk_4_low_poly.glb",
+            "name": "204_desk_4_low_poly.glb",
+            "position": [
+                26.153226852416992,
+                9.40101432800293,
+                -7.853766441345215
+            ],
+            "rotation": [
+                0.0,
+                180.0,
+                0.0
+            ],
+            "scale": [
+                3.2233333587646484,
+                3.2233333587646484,
+                3.2233333587646484
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\205_office_desk_with_chair_computer1.glb",
+            "name": "205_office_desk_with_chair_computer1.glb",
+            "position": [
+                15.826611518859863,
+                9.10790729522705,
+                -4.139768600463867
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                2.8866665363311768,
+                2.8866665363311768,
+                2.8866665363311768
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\206_office_desk_with_chair_computer2.glb",
+            "name": "206_office_desk_with_chair_computer2.glb",
+            "position": [
+                33.01396942138672,
+                9.383429527282715,
+                -7.606341361999512
+            ],
+            "rotation": [
+                0.0,
+                -89.22000122070313,
+                0.0
+            ],
+            "scale": [
+                3.056666612625122,
+                3.056666612625122,
+                3.056666612625122
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\101_chair1.glb",
+            "name": "101_chair1.glb",
+            "position": [
+                18.1644287109375,
+                11.070433616638184,
+                4.921518802642822
+            ],
+            "rotation": [
+                0.0,
+                165.91000366210938,
+                0.0
+            ],
+            "scale": [
+                3.5,
+                3.5,
+                3.5
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\102_chair2.glb",
+            "name": "102_chair2.glb",
+            "position": [
+                18.845806121826172,
+                9.572166442871094,
+                -9.673809051513672
+            ],
+            "rotation": [
+                0.0,
+                145.57000732421875,
+                0.0
+            ],
+            "scale": [
+                1.3566665649414063,
+                1.3566665649414063,
+                1.3566665649414063
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\102_chair2.glb",
+            "name": "102_chair2.glb",
+            "position": [
+                27.087186813354492,
+                9.513830184936523,
+                -11.636961936950684
+            ],
+            "rotation": [
+                0.0,
+                -144.0,
+                0.0
+            ],
+            "scale": [
+                1.3799999952316284,
+                1.3799999952316284,
+                1.3799999952316284
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\103_chair3.glb",
+            "name": "103_chair3.glb",
+            "position": [
+                26.06941032409668,
+                9.330018043518066,
+                5.702256679534912
+            ],
+            "rotation": [
+                0.0,
+                -62.61000061035156,
+                0.0
+            ],
+            "scale": [
+                1.493333339691162,
+                1.493333339691162,
+                1.493333339691162
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\302_sofa2.glb",
+            "name": "302_sofa2.glb",
+            "position": [
+                9.443888664245605,
+                11.310318946838379,
+                -16.498598098754883
+            ],
+            "rotation": [
+                0.0,
+                90.77999877929688,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                4.289999961853027,
+                4.289999961853027
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\501_christmas_gift_boxes.glb",
+            "name": "501_christmas_gift_boxes.glb",
+            "position": [
+                10.071385383605957,
+                9.160379409790039,
+                -8.881697654724121
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                4.063333511352539,
+                4.063333511352539,
+                4.063333511352539
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\502_monstera_1_low_poly.glb",
+            "name": "502_monstera_1_low_poly.glb",
+            "position": [
+                9.140000343322754,
+                9.130000114440918,
+                -23.219999313354492
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                3.109999895095825,
+                3.109999895095825,
+                3.109999895095825
+            ],
+            "type": "GLB",
+            "visible": true
+        },
+        {
+            "filePath": "C:\\Users\\visualnnz\\Desktop\\Projects\\3D_Interior_Design_Simulation\\3d-interior-design-simulation\\asset\\models\\503_water_fire_extinguisher_low_poly.glb",
+            "name": "503_water_fire_extinguisher_low_poly.glb",
+            "position": [
+                14.59000015258789,
+                6.619999885559082,
+                -24.010000228881836
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                3.2699997425079346,
+                3.2699997425079346,
+                3.2699997425079346
+            ],
+            "type": "GLB",
+            "visible": true
+        }
+    ],
+    "room": {
+        "ceilingColor": [
+            0.8999999761581421,
+            0.8500000238418579,
+            0.699999988079071,
+            1.0
+        ],
+        "depth": 5.0,
+        "floorColor": [
+            0.800000011920929,
+            0.6000000238418579,
+            0.4000000059604645,
+            1.0
+        ],
+        "hasWindow": false,
+        "height": 5.0,
+        "wallColor": [
+            0.8999999761581421,
+            0.800000011920929,
+            0.6000000238418579,
+            1.0
+        ],
+        "width": 5.0,
+        "windowColor": [
+            0.6000000238418579,
+            0.800000011920929,
+            1.0,
+            0.5
+        ]
+    },
+    "version": "1.0"
+}
